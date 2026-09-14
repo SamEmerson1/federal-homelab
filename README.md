@@ -15,7 +15,7 @@ findings.
 | Host | OS | Role |
 |---|---|---|
 | **DC01** | Windows Server 2025 | Active Directory Domain Services, DNS, Group Policy |
-| **WS01** | Windows 11 Enterprise | Domain-joined workstation, Sysmon telemetry, attack simulation target |
+| **WS01** | Windows 11 Pro | Domain-joined workstation, Sysmon telemetry, attack simulation target |
 | **RHEL01** | Rocky Linux 9 | STIG hardening target, OpenSCAP scanning |
 | **SIEM01** | Rocky Linux 9 | Splunk indexer, centralized log collection |
 | **KALI01** | Kali Linux | Vulnerability scanner, attack platform |

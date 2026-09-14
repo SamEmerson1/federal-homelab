@@ -13,7 +13,7 @@
 | DC01 | Windows Server 2025 Standard | 4 GB | 2 | 60 GB thin | 10.10.10.10 | AD DS, DNS, Group Policy, STIG GPO distribution |
 | SIEM01 | Rocky Linux 9 (minimal) | 6 GB | 2 | 80 GB thin | 10.10.10.20 | Splunk indexer and search head |
 | RHEL01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 40 GB thin | 10.10.10.30 | OpenSCAP STIG hardening target |
-| WS01 | Windows 11 Enterprise | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, Sysmon, Atomic Red Team target, SCC scanning host |
+| WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, Sysmon, Atomic Red Team target, SCC scanning host |
 | KALI01 | Kali Linux | 4 GB | 2 | 60 GB thin | 10.10.10.50 | Nessus scanner, attack platform |
 
 Rocky Linux was chosen for both Linux hosts because it is binary compatible with Red Hat

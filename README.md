@@ -56,8 +56,11 @@ Baseline scan, remediation, rescan. Findings that were not remediated are tracke
 
 | Target | Benchmark | Tool | Before | After |
 |---|---|---|---|---|
-| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP | — | — |
+| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP | 44.9% | — |
 | WS01 | Microsoft Windows 11 STIG | SCC | — | — |
+
+RHEL01 baseline: 167 rules passed, 258 failed — 11 high, 224 medium, 20 low.
+Compliance percentage uses OpenSCAP default scoring.
 
 ![OpenSCAP compliance report](screenshots/openscap-report.png)
 

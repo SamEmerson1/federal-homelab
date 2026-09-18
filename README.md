@@ -5,8 +5,7 @@ defense-contractor environments: DISA STIG hardening, SCAP compliance scanning, 
 vulnerability assessment, centralized logging with ATT&CK-mapped detections, and NIST 800-53
 control documentation.
 
-Five virtual machines, a Windows domain, a SIEM, an attack platform, and a documented set of
-findings.
+Five virtual machines, a Windows domain, an attack platform, and a documented set of findings.
 
 ---
 
@@ -14,10 +13,10 @@ findings.
 
 | Host | OS | Role |
 |---|---|---|
-| **DC01** | Windows Server 2025 | Active Directory Domain Services, DNS, Group Policy |
-| **WS01** | Windows 11 Pro | Domain-joined workstation, Sysmon telemetry, attack simulation target |
-| **RHEL01** | Rocky Linux 9 | STIG hardening target, OpenSCAP scanning |
-| **SIEM01** | Rocky Linux 9 | Splunk indexer, centralized log collection |
+| **DC01** | Windows Server 2025 Standard | Active Directory Domain Services, DNS, Group Policy |
+| **WS01** | Windows 11 Pro (25H2) | Domain-joined workstation, Sysmon telemetry, attack simulation target |
+| **RHEL01** | Rocky Linux 9.8 | STIG hardening target, OpenSCAP scanning |
+| **SIEM01** | Rocky Linux 9.8 | Splunk indexer, centralized log collection |
 | **KALI01** | Kali Linux | Vulnerability scanner, attack platform |
 
 All hosts sit on an isolated virtual network segment with no route to the physical host or any
@@ -37,7 +36,7 @@ See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation 
 |---|---|
 | Directory services | Active Directory Domain Services, DNS, Group Policy |
 | Linux compliance scanning | OpenSCAP with `scap-security-guide` (DISA STIG profile) |
-| Windows compliance scanning | SCAP Compliance Checker (SCC), DISA STIG Viewer |
+| Windows compliance scanning | SCAP Compliance Checker (SCC) 5.15 |
 | Windows hardening | DISA STIG Group Policy Objects |
 | Vulnerability assessment | Tenable Nessus — credentialed and uncredentialed scanning |
 | Endpoint telemetry | Sysmon |
@@ -51,18 +50,26 @@ See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation 
 
 ## Compliance hardening
 
-Baseline scan, remediation, rescan. Findings that were not remediated are tracked in the
-[POA&M](docs/poam.md) with a written justification.
+Baseline scan, remediation, rescan, against DISA STIG benchmarks. Findings that cannot be
+remediated are tracked in the [POA&M](docs/poam.md) with a written justification.
 
 | Target | Benchmark | Tool | Before | After |
 |---|---|---|---|---|
-| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP | 44.9% | — |
-| WS01 | Microsoft Windows 11 STIG | SCC | — | — |
+| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP 1.3.14 | 44.9% | — |
+| WS01 | Microsoft Windows 11 STIG V2R10 | SCC 5.15 | 38.84% | — |
+| DC01 | Microsoft Windows Server 2025 STIG V1R1 | SCC 5.15 | 42.74% | — |
 
-RHEL01 baseline: 167 rules passed, 258 failed — 11 high, 224 medium, 20 low.
-Compliance percentage uses OpenSCAP default scoring.
+Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
+
+| Target | Pass | Fail | N/A | Not checked | CAT I fail | CAT II fail | CAT III fail |
+|---|---|---|---|---|---|---|---|
+| RHEL01 | 167 | 258 | 10 | — | 11 | 224 | 20 |
+| WS01 | 94 | 148 | 5 | 10 | 13 | 127 | 8 |
+| DC01 | 103 | 138 | 21 | 29 | 11 | 119 | 8 |
 
 ![OpenSCAP compliance report](screenshots/openscap-report.png)
+
+![SCC compliance report](screenshots/scc-report.png)
 
 Linux remediation uses OpenSCAP-generated fix scripts, reviewed and applied in stages. Windows
 remediation uses the DISA STIG GPO package imported into Active Directory and linked to a scoped
@@ -70,18 +77,44 @@ organizational unit.
 
 ![STIG GPO applied](screenshots/stig-gpo-applied.png)
 
+### Scan scope
+
+SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monitoring platform,
+KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so STIG rules requiring
+Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied and are recorded in the
+POA&M rather than counted as remediation failures. Rationale for all three in
+[`docs/architecture.md`](docs/architecture.md).
+
 ---
 
 ## Vulnerability assessment
 
-Credentialed Nessus scans against the domain and Linux hosts, remediation of critical and high
-findings, then verification rescans.
+Nessus scans from KALI01 against all four non-scanner hosts. An uncredentialed baseline was taken
+first to establish the external view, then a credentialed scan with domain and SSH credentials.
 
-| Scan | Critical | High | Medium |
+| Scan | Hosts | Unique findings | Duration |
 |---|---|---|---|
-| Baseline (credentialed) | — | — | — |
-| Post-remediation | — | — | — |
-| Remaining, tracked in POA&M | — | — | — |
+| Uncredentialed baseline | 4 | 32 | 22 min |
+| Credentialed baseline | 4 | 85 | 29 min |
+
+Per-host finding counts:
+
+| Host | Uncredentialed | Credentialed |
+|---|---|---|
+| DC01 | 58 | 229 |
+| WS01 | 20 | 233 |
+| RHEL01 | 22 | 53 |
+| SIEM01 | 5 | 37 |
+
+Credentialed scanning returned roughly 4× the unique findings from the same hosts on the same
+network — the uncredentialed scan can enumerate open ports and service banners, but cannot read
+patch levels or local configuration.
+
+| Severity | Baseline (credentialed) | Post-remediation | Remaining in POA&M |
+|---|---|---|---|
+| Critical | — | — | — |
+| High | — | — | — |
+| Medium | — | — | — |
 
 ![Nessus scan results](screenshots/nessus-results.png)
 
@@ -116,9 +149,7 @@ and what it does not catch. Full set in [`detections/`](detections/).
 
 | Artifact | Contents |
 |---|---|
-| [`docs/ssp-lite.md`](docs/ssp-lite.md) | System Security Plan — NIST 800-53 Rev. 5 control implementation statements across AC, AU, CM, IA, RA, SC, and SI |
-| [`docs/poam.md`](docs/poam.md) | Plan of Action and Milestones — unremediated findings with severity, control mapping, and remediation plan |
-| [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing |
+| [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing, scan scope |
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
 
 ---
@@ -127,7 +158,7 @@ and what it does not catch. Full set in [`detections/`](detections/).
 
 ```
 federal-security-lab/
-├── docs/           architecture, network diagram, SSP, POA&M
+├── docs/           architecture, network diagram
 ├── configs/        Sysmon config, Splunk inputs/outputs, GPO notes
 ├── scans/          OpenSCAP, SCC, and Nessus results (sanitized)
 ├── detections/     SPL searches with ATT&CK mapping
@@ -140,8 +171,8 @@ federal-security-lab/
 ## Notes
 
 A personal training environment, not an accredited system. Compliance percentages describe lab
-virtual machines. STIG and SCAP content is published by DISA; this repository contains only results
-generated against it.
+virtual machines. STIG and SCAP content is published by DISA and NIWC Atlantic; this repository
+contains only results generated against it.
 
 AI assistance (Claude, Anthropic) was used for planning, drafting documentation, and reviewing
 configurations. All scanning, hardening, and detection validation was performed by me in this

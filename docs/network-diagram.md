@@ -2,6 +2,8 @@
 
 ## Topology
 
+**Status:** in progress — Splunk deployment pending.
+
 ```mermaid
 graph TB
     subgraph LABNET["Isolated segment · 10.10.10.0/24 · no route to host or local network"]

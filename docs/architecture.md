@@ -42,7 +42,7 @@ running adversary techniques.
 | Lab to physical host | Closed |
 | Lab to local network | Closed |
 | Lab to internet | Closed by default; opened temporarily for patching, then removed |
-| Clipboard, drag-and-drop, shared folders | Disabled on the workstation and attack platform |
+| Clipboard, drag-and-drop, shared folders | Disabled on the workstation |
 | USB passthrough | Disabled |
 
 Every temporary internet window is recorded with the date, host, purpose, and duration. "Isolated,

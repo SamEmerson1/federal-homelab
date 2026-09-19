@@ -74,8 +74,7 @@ See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation 
 
 ## Compliance hardening
 
-Baseline scan, remediation, rescan, against DISA STIG benchmarks. Findings that cannot be
-remediated are tracked in the [POA&M](docs/poam.md) with a written justification.
+Baseline scan, remediation, rescan, against DISA STIG benchmarks.
 
 | Target | Benchmark | Tool | Before | After |
 |---|---|---|---|---|
@@ -105,8 +104,7 @@ organizational unit.
 
 SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monitoring platform,
 KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so STIG rules requiring
-Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied and are recorded in the
-POA&M rather than counted as remediation failures. Rationale for all three in
+Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied. Rationale for all three in
 [`docs/architecture.md`](docs/architecture.md).
 
 ---

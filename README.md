@@ -156,12 +156,7 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 | Abuse Elevation Control: UAC Bypass | T1548.002 | Sysmon EID 1, 13 | — |
 | Clear Windows Event Logs | T1070.001 | Security 1102, System 104 | — |
 
-![Splunk detection firing](screenshots/splunk-detection.png)
 
-Each detection documents the hypothesis, the SPL, expected false positives, analyst response steps,
-and what it does not catch. Full set in [`detections/`](detections/).
-
-![Splunk dashboard](screenshots/splunk-dashboard.png)
 
 ---
 

@@ -8,7 +8,7 @@ graph TB
         DC01["DC01<br/>Windows Server 2025<br/>10.10.10.10<br/>AD DS · DNS · Group Policy"]
         SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk · :9997 :8000"]
         RHEL01["RHEL01<br/>Rocky Linux 9<br/>10.10.10.30<br/>OpenSCAP STIG target"]
-        WS01["WS01<br/>Windows 11 Enterprise<br/>10.10.10.40<br/>Sysmon · Atomic Red Team · SCC"]
+        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>Sysmon · Atomic Red Team · SCC"]
         KALI01["KALI01<br/>Kali Linux<br/>10.10.10.50<br/>Nessus scanner"]
     end
 
@@ -56,9 +56,4 @@ flowchart TB
     R5 --> R6["Credentialed baseline"]
     R6 --> REM3["Patch and reconfigure"]
     REM3 --> R7["Verification rescan"]
-    R7 --> POAM["POA&M"]
-
-    R2 --> SSP["System Security Plan<br/>NIST 800-53 controls"]
-    R4 --> SSP
-    R7 --> SSP
 ```

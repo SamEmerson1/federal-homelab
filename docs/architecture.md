@@ -66,8 +66,81 @@ persistence that survives cleanup can be rolled back.
 | Threat detection | SPL detections mapped to MITRE ATT&CK | SOC detection engineering |
 | Control documentation | System Security Plan, POA&M | RMF artifacts under NIST SP 800-37 and 800-53 |
 
-## Scope boundaries
+## Assessment scope
 
-Compliance percentages come from OpenSCAP and SCC. Nessus is used for vulnerability assessment
-only — the license tier in use does not include compliance auditing or audit files, so no STIG
-percentage in this repository is derived from Nessus output.
+Two assessment tracks run against this environment: SCAP compliance scanning against DISA STIG
+benchmarks, and network vulnerability scanning with Nessus.
+
+| Host | Compliance scan | Vulnerability scan |
+|---|---|---|
+| DC01 | SCC — Windows Server 2025 STIG | Yes |
+| WS01 | SCC — Windows 11 STIG | Yes |
+| RHEL01 | OpenSCAP — RHEL 9 STIG | Yes |
+| SIEM01 | Excluded | Yes |
+| KALI01 | Excluded | Scanner |
+
+SCAP scanners read local registry, policy, and filesystem state, so they run locally on each target
+rather than remotely. Nessus scans across the network from KALI01, because it assesses exposed
+services and patch levels rather than local configuration.
+
+### Exclusions
+
+**SIEM01** is the monitoring platform. Applying the STIG baseline would conflict with Splunk's port
+and service-account requirements during detection development. Excluded from compliance scanning as
+a documented scope limitation; still included in vulnerability scanning.
+
+**KALI01** is the assessment platform, not a target. It is Debian-based, no DISA STIG exists for it,
+and hardening an attack platform is self-defeating.
+
+### Windows 11 Pro limitation
+
+WS01 runs Windows 11 Pro rather than Enterprise. Microsoft's published Enterprise evaluation image
+was past its expiration date on download and enforced hourly shutdowns, so Pro was substituted.
+
+STIG rules requiring Enterprise-only features cannot be satisfied. The WS01 baseline confirms this
+concretely — `V-253370, Credential Guard must be running` appears as a CAT I failure with no
+remediation path on Pro. Each such rule is recorded in the POA&M as a risk-accepted item with the
+reason stated, rather than counted as a remediation failure.
+
+### What produces which number
+
+Compliance percentages come from OpenSCAP and SCC only. The Nessus license tier in use includes no
+compliance checks or audit files, so no STIG figure in this repository derives from Nessus output.
+
+---
+
+## SCAP content and tooling provenance
+
+A compliance percentage is only meaningful alongside the benchmark revision it was measured
+against. Every scan in `scans/` records its tool version, benchmark version, and profile.
+
+| Component | Source | Version |
+|---|---|---|
+| SCAP Compliance Checker | DoD Cyber Exchange (`cyber.mil/stigs/SCAP`) | 5.15 |
+| Windows 11 STIG SCAP benchmark | Bundled DISA content, SCC 5.15 | V2R10 / 002.010.018 |
+| Windows Server 2025 STIG SCAP benchmark | Bundled DISA content, SCC 5.15 | V1R1 / 001.001.001 |
+| RHEL 9 STIG content | `scap-security-guide`, Rocky Linux 9 repositories | 0.1.82 |
+| OpenSCAP scanner | Rocky Linux 9 repositories | 1.3.14 |
+
+The SCC installer was verified against the published SHA-256 checksum before transfer into the lab.
+The Windows SCAP content carries a DoD PKI digital signature, which SCC validated at scan time —
+both baseline reports record signature status VALID.
+
+NIWC Atlantic maintains public mirrors of SCC releases and SCAP content on GitHub
+(`niwc-atlantic/scap-scc` and `niwc-atlantic/scap-content-library`) as an alternative to the
+CAC-gated Cyber Exchange portal.
+
+### Profile selection
+
+All Windows scans use the **MAC-2 Sensitive** profile. MAC is DoD's Mission Assurance Category:
+MAC-1 Classified applies to systems handling classified data, MAC-2 Sensitive to systems handling
+sensitive but unclassified data, MAC-3 Public to administrative systems. MAC-2 matches what these
+hosts represent. Post-remediation scans use the same profile, since a before/after comparison across
+different profiles would be meaningless.
+
+### Manual questions
+
+The NIWC-enhanced SCAP content includes checks that cannot be automated — organizational policy and
+physical security questions. These are left unanswered and reported as Not Checked. Compliance
+scores reflect automated checks only, and SCC annotates this on each report.
+

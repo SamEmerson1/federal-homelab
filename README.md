@@ -94,12 +94,6 @@ Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 
 ![SCC compliance report](screenshots/scc-report.png)
 
-Linux remediation uses OpenSCAP-generated fix scripts, reviewed and applied in stages. Windows
-remediation uses the DISA STIG GPO package imported into Active Directory and linked to a scoped
-organizational unit.
-
-![STIG GPO applied](screenshots/stig-gpo-applied.png)
-
 ### Scan scope
 
 SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monitoring platform,

@@ -34,4 +34,4 @@ scoring method for the delta to be meaningful.
 
 ## Evidence
 
-`rhel01-baseline-20260916.html`
+[Full OpenSCAP report](https://samemerson1.github.io/federal-homelab/scans/openscap/rhel01-baseline-20260916.html)

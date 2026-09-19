@@ -7,16 +7,15 @@
 **Credentials:** none — `Auth: Fail` on all hosts is the intended result
 **Duration:** 22 minutes
 
-## Targets
+| IP | Host | Low | Info | Total |
+|---|---|---|---|---|
+| 10.10.10.10 | DC01 | 0 | 30 | 30 |
+| 10.10.10.20 | SIEM01 | 0 | 5 | 5 |
+| 10.10.10.30 | RHEL01 | 1 | 22 | 23 |
+| 10.10.10.40 | WS01 | 0 | 12 | 12 |
+| | **Total** | **1** | **69** | **70** |
 
-| IP | Host | Findings |
-|---|---|---|
-| 10.10.10.10 | DC01 | 58 |
-| 10.10.10.20 | SIEM01 | 5 |
-| 10.10.10.30 | RHEL01 | 22 |
-| 10.10.10.40 | WS01 | 20 |
-
-**Unique vulnerabilities across all hosts:** 32, overwhelmingly informational.
+**Unique plugins:** 40. No critical, high, or medium findings.
 
 KALI01 is excluded — it is the scanner.
 

@@ -52,6 +52,17 @@ graph TB
 See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation design, and
 [`docs/network-diagram.md`](docs/network-diagram.md) for the full topology.
 
+### Active Directory
+
+Single-forest domain `lab.local` on DC01, with WS01 joined and placed in a dedicated
+Workstations OU so hardening policy can be scoped away from the domain controller.
+
+![Domain controller health](screenshots/ad-dcdiag.png)
+
+![OU structure](screenshots/ad-ou-structure.png)
+
+![WS01 moved to Workstations OU](screenshots/ad-ws01-ou.png)
+
 ---
 
 ## Stack

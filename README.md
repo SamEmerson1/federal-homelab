@@ -118,25 +118,22 @@ Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied. Rati
 
 Nessus scans from KALI01 against all four non-scanner hosts. An uncredentialed baseline was taken
 first to establish the external view, then a credentialed scan with domain and SSH credentials.
-
-| Scan | Hosts | Unique findings | Duration |
-|---|---|---|---|
-| Uncredentialed baseline | 4 | 32 | 22 min |
-| Credentialed baseline | 4 | 85 | 29 min |
-
-Per-host finding counts:
+| Scan | Hosts | Unique plugins | Finding instances | Duration |
+|---|---|---|---|---|
+| Uncredentialed baseline | 4 | 40 | 70 | 22 min |
+| Credentialed baseline | 4 | 244 | 421 | 29 min |
 
 | Host | Uncredentialed | Credentialed | Critical | High | Medium |
 |---|---|---|---|---|---|
-| DC01 | 58 | 229 | 0 | 3 | 0 |
-| WS01 | 20 | 233 | 21 | 32 | 5 |
-| RHEL01 | 22 | 53 | 0 | 0 | 0 |
-| SIEM01 | 5 | 37 | 0 | 0 | 0 |
-| **Total** | **105** | **552** | **21** | **35** | **5** |
+| DC01 | 30 | 143 | 0 | 3 | 0 |
+| WS01 | 12 | 186 | 21 | 32 | 5 |
+| RHEL01 | 23 | 54 | 0 | 0 | 0 |
+| SIEM01 | 5 | 38 | 0 | 0 | 0 |
+| **Total** | **70** | **421** | **21** | **35** | **5** |
 
-Credentialed scanning returned 2.7× the unique findings and 5.3× the total instances from the same
-hosts on the same network — an uncredentialed scan enumerates open ports and service banners, but
-cannot read installed package versions or local configuration, which is where missing patches live.
+Credentialed scanning returned 6× the findings from the same hosts on the same network. An
+uncredentialed scan enumerates open ports and service banners, but cannot read installed package
+versions or local configuration, which is where missing patches live.
 
 WS01 carries every critical finding and 32 of 35 highs. The Rocky Linux hosts, patched during their
 build, returned no critical, high, or medium findings.

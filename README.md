@@ -98,7 +98,7 @@ Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 
 | Target | Pass | Fail | N/A | Not checked | CAT I fail | CAT II fail | CAT III fail |
 |---|---|---|---|---|---|---|---|
-| RHEL01 | 167 | 258 | 10 | — | 11 | 224 | 20 |
+| RHEL01 | 167 | 258 | 42 | 10 | 11 | 224 | 20 |
 | WS01 | 94 | 148 | 5 | 10 | 13 | 127 | 8 |
 | DC01 | 103 | 138 | 21 | 29 | 11 | 119 | 8 |
 

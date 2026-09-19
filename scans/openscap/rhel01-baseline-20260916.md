@@ -12,7 +12,8 @@
 |---|---|
 | Pass | 167 |
 | Fail | 258 |
-| Other (N/A, not checked) | 10 |
+| N/A | 42 |
+| Not checked | 10 |
 | **Compliance (OpenSCAP default scoring)** | **44.9%** |
 
 | Severity of failures | Count |

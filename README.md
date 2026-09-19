@@ -183,9 +183,8 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 ## Repository
 
 ```
-federal-security-lab/
+federal-homelablab/
 ├── docs/           architecture, network diagram
-├── configs/        Sysmon config, Splunk inputs/outputs, GPO notes
 ├── scans/          OpenSCAP, SCC, and Nessus results
 ├── detections/     SPL searches with ATT&CK mapping
 ├── scripts/        scan automation

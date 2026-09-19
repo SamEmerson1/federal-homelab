@@ -8,15 +8,15 @@
 graph TB
     subgraph LABNET["Isolated segment · 10.10.10.0/24 · no route to host or local network"]
         DC01["DC01<br/>Windows Server 2025<br/>10.10.10.10<br/>AD DS · DNS · Group Policy"]
-        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk · :9997 :8000"]
+        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk (planned) · :9997 :8000"]
         RHEL01["RHEL01<br/>Rocky Linux 9<br/>10.10.10.30<br/>OpenSCAP STIG target"]
-        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>Sysmon · Atomic Red Team · SCC"]
+        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>SCC · Sysmon + ART (planned)"]
         KALI01["KALI01<br/>Kali Linux<br/>10.10.10.50<br/>Nessus scanner"]
     end
 
     WS01 -->|"domain join · Group Policy"| DC01
-    WS01 -->|"Sysmon + Windows event logs :9997"| SIEM01
-    DC01 -->|"Security + Directory Service logs :9997"| SIEM01
+    WS01 -.->|"planned: Sysmon + Windows event logs :9997"| SIEM01
+    DC01 -.->|"planned: Security + Directory Service logs :9997"| SIEM01
     KALI01 -->|"credentialed scan"| DC01
     KALI01 -->|"credentialed scan"| WS01
     KALI01 -->|"credentialed scan"| RHEL01

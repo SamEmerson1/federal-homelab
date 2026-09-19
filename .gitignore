@@ -1,0 +1,30 @@
+# Raw scan output: may contain hostnames, accounts, and full system inventory.
+# Only reviewed HTML reports and their .md summaries are committed.
+*-arf.xml
+scans/**/*.xml
+*.nessus
+*.ckl
+*.cklb
+
+# Generated remediation scripts (large, regenerable from the benchmark)
+*-remediate-*.sh
+
+# Secrets and keys
+*.pem
+*.key
+*.pfx
+*.p12
+*.lic
+.env
+
+# VM and ISO artifacts
+*.iso
+*.vmx
+*.vmdk
+*.nvram
+*.vmem
+
+# OS clutter
+Thumbs.db
+desktop.ini
+.DS_Store

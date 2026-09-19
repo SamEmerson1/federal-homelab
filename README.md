@@ -14,9 +14,9 @@ Five virtual machines, a Windows domain, an attack platform, and a documented se
 | Host | OS | Role |
 |---|---|---|
 | **DC01** | Windows Server 2025 Standard | Active Directory Domain Services, DNS, Group Policy |
-| **WS01** | Windows 11 Pro (25H2) | Domain-joined workstation, Sysmon telemetry, attack simulation target |
+| **WS01** | Windows 11 Pro (25H2) | Domain-joined workstation, SCC scanning host; Sysmon and attack simulation planned |
 | **RHEL01** | Rocky Linux 9.8 | STIG hardening target, OpenSCAP scanning |
-| **SIEM01** | Rocky Linux 9.8 | Splunk indexer, centralized log collection |
+| **SIEM01** | Rocky Linux 9.8 | Log collection host; Splunk deployment planned |
 | **KALI01** | Kali Linux | Vulnerability scanner, attack platform |
 
 All hosts sit on an isolated virtual network segment with no route to the physical host or any
@@ -27,15 +27,15 @@ removed.
 graph TB
     subgraph LABNET["Isolated segment · 10.10.10.0/24 · no route to host or local network"]
         DC01["DC01<br/>Windows Server 2025<br/>10.10.10.10<br/>AD DS · DNS · Group Policy"]
-        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk · :9997 :8000"]
+        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk (planned) · :9997 :8000"]
         RHEL01["RHEL01<br/>Rocky Linux 9<br/>10.10.10.30<br/>OpenSCAP STIG target"]
-        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>Sysmon · Atomic Red Team · SCC"]
+        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>SCC · Sysmon + ART (planned)"]
         KALI01["KALI01<br/>Kali Linux<br/>10.10.10.50<br/>Nessus scanner"]
     end
 
     WS01 -->|"domain join · Group Policy"| DC01
-    WS01 -->|"Sysmon + Windows event logs :9997"| SIEM01
-    DC01 -->|"Security + Directory Service logs :9997"| SIEM01
+    WS01 -.->|"planned: Sysmon + Windows event logs :9997"| SIEM01
+    DC01 -.->|"planned: Security + Directory Service logs :9997"| SIEM01
     KALI01 -->|"credentialed scan"| DC01
     KALI01 -->|"credentialed scan"| WS01
     KALI01 -->|"credentialed scan"| RHEL01
@@ -67,19 +67,20 @@ Workstations OU so hardening policy can be scoped away from the domain controlle
 
 ## Stack
 
-| Function | Tool |
-|---|---|
-| Directory services | Active Directory Domain Services, DNS, Group Policy |
-| Linux compliance scanning | OpenSCAP with `scap-security-guide` (DISA STIG profile) |
-| Windows compliance scanning | SCAP Compliance Checker (SCC) 5.15 |
-| Windows hardening | DISA STIG Group Policy Objects |
-| Vulnerability assessment | Tenable Nessus — credentialed and uncredentialed scanning |
-| Endpoint telemetry | Sysmon |
-| Log aggregation | Splunk Enterprise with Universal Forwarders |
-| Detection engineering | SPL searches mapped to MITRE ATT&CK |
-| Adversary emulation | Atomic Red Team |
-| Control documentation | NIST SP 800-53 Rev. 5, RMF artifacts |
-| Virtualization | VMware Workstation Pro |
+| Function | Tool | Status |
+|---|---|---|
+| Directory services | Active Directory Domain Services, DNS, Group Policy | In use |
+| Linux compliance scanning | OpenSCAP with `scap-security-guide` (DISA STIG profile) | In use |
+| Windows compliance scanning | SCAP Compliance Checker (SCC) 5.15 | In use |
+| Vulnerability assessment | Tenable Nessus — credentialed and uncredentialed scanning | In use |
+| Virtualization | VMware Workstation Pro | In use |
+| Linux hardening | OpenSCAP-generated remediation, applied in reviewed stages | In progress |
+| Windows hardening | DISA STIG Group Policy Objects | In progress |
+| Endpoint telemetry | Sysmon | Planned |
+| Log aggregation | Splunk Enterprise with Universal Forwarders | Planned |
+| Detection engineering | SPL searches mapped to MITRE ATT&CK | Planned |
+| Adversary emulation | Atomic Red Team | Planned |
+| Control documentation | NIST SP 800-53 Rev. 5, RMF artifacts | Planned |
 
 ---
 
@@ -108,8 +109,8 @@ Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 ### Scan scope
 
 SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monitoring platform,
-KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so STIG rules requiring
-Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied. Rationale for all three in
+KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so the one STIG rule requiring an
+Enterprise-only feature (Credential Guard) cannot be satisfied. Rationale for all three in
 [`docs/architecture.md`](docs/architecture.md).
 
 ---
@@ -124,13 +125,13 @@ first to establish the external view, then a credentialed scan with domain and S
 | Uncredentialed baseline | 4 | 40 | 70 | 22 min |
 | Credentialed baseline | 4 | 244 | 421 | 29 min |
 
-| Host | Uncredentialed | Credentialed | Critical | High | Medium |
-|---|---|---|---|---|---|
-| DC01 | 30 | 143 | 0 | 3 | 0 |
-| WS01 | 12 | 186 | 21 | 32 | 5 |
-| RHEL01 | 23 | 54 | 0 | 0 | 0 |
-| SIEM01 | 5 | 38 | 0 | 0 | 0 |
-| **Total** | **70** | **421** | **21** | **35** | **5** |
+| Host | Uncredentialed | Credentialed | Critical | High | Medium | Low |
+|---|---|---|---|---|---|---|
+| DC01 | 30 | 143 | 0 | 3 | 0 | 0 |
+| WS01 | 12 | 186 | 21 | 32 | 5 | 1 |
+| RHEL01 | 23 | 54 | 0 | 0 | 0 | 1 |
+| SIEM01 | 5 | 38 | 0 | 0 | 0 | 1 |
+| **Total** | **70** | **421** | **21** | **35** | **5** | **3** |
 
 Credentialed scanning returned 6× the findings from the same hosts on the same network. An
 uncredentialed scan enumerates open ports and service banners, but cannot read installed package
@@ -144,6 +145,7 @@ build, returned no critical, high, or medium findings.
 | Critical | 21 | — | — |
 | High | 35 | — | — |
 | Medium | 5 | — | — |
+| Low | 3 | — | — |
 
 ![Nessus scan results](screenshots/nessus-results.png)
 
@@ -174,6 +176,7 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing, scan scope |
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
+| [`docs/internet-windows.md`](docs/internet-windows.md) | Log of temporary internet access for patching |
 
 ---
 

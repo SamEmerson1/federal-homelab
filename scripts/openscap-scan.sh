@@ -6,7 +6,13 @@
 #   sudo ./openscap-scan.sh list                  # enumerate available profiles
 #   sudo ./openscap-scan.sh scan baseline         # pre-remediation scan
 #   sudo ./openscap-scan.sh scan post             # post-remediation scan
-#   sudo ./openscap-scan.sh fix                   # GENERATE (not run) fix script
+#   sudo ./openscap-scan.sh fix                   # GENERATE (not run) fix script, whole profile
+#   sudo ./openscap-scan.sh fix <results.xml>     # GENERATE fix script for failed rules only
+#
+# Scoring: the headline figure is OpenSCAP's default weighted score
+# (urn:xccdf:scoring:default), the number the HTML report displays. The raw
+# pass rate, pass / (pass + fail), is printed second for reference only.
+# Baseline and rescan must be compared on the same method.
 #
 # SNAPSHOT THE VM BEFORE RUNNING 'fix' OUTPUT. STIG remediation can lock you
 # out of SSH, break sudo, or leave the system unbootable. That is not a
@@ -105,44 +111,68 @@ cmd_scan() {
     echo "----------------------------------------------------------"
     echo " Result counts"
     echo "----------------------------------------------------------"
-    for r in pass fail notapplicable notchecked error; do
-        printf " %-16s %s\n" "$r" "$(grep -c "<result>${r}</result>" "${base}.xml" || echo 0)"
+    count() { grep -c "<result>$1</result>" "${base}.xml" || true; }
+    for r in pass fail notapplicable notchecked notselected error unknown; do
+        printf " %-16s %s\n" "$r" "$(count "$r")"
     done
 
-    local p f
-    p=$(grep -c '<result>pass</result>' "${base}.xml" || echo 0)
-    f=$(grep -c '<result>fail</result>' "${base}.xml" || echo 0)
+    local p f score
+    p=$(count pass)
+    f=$(count fail)
+    score="$(grep -oP '<([a-z-]+:)?score system="urn:xccdf:scoring:default"[^>]*>\K[0-9.]+' "${base}.xml" | head -n1 || true)"
+
+    echo
+    if [[ -n "$score" ]]; then
+        printf " Compliance, OpenSCAP default weighted score: %.1f%%   <- README figure\n" "$score"
+    else
+        echo " WARNING: default score not found in ${base}.xml - read it from the HTML report"
+    fi
     if (( p + f > 0 )); then
-        echo
-        printf " Compliance (pass / pass+fail): %.1f%%\n" "$(echo "scale=4; 100*$p/($p+$f)" | bc)"
-        echo " ^ record this in the README metrics table"
+        awk -v p="$p" -v f="$f" 'BEGIN { printf " Raw pass rate, pass / (pass + fail): %.1f%%   (reference only)\n", 100*p/(p+f) }'
     fi
 
     echo
-    echo " ARF XML is NOT for the repo - .gitignore blocks it."
+    echo " XML results stay local - .gitignore blocks them."
     echo " Commit ${base##*/}.html after reviewing it for hostnames and accounts."
 }
 
 cmd_fix() {
+    local results="${1:-}"
     install_deps
     find_datastream
     resolve_profile
     mkdir -p "$OUTDIR"
     local fixfile="${OUTDIR}/${HOSTLABEL}-remediate-${DATE}.sh"
 
-    oscap xccdf generate fix \
-        --profile "$PROFILE" \
-        --fix-type bash \
-        --output "$fixfile" \
-        "$DS"
+    if [[ -n "$results" ]]; then
+        # Failed rules only, taken from a previous scan's results file.
+        [[ -f "$results" ]] || die "results file not found: $results"
+        local rid
+        rid="$(grep -oP '<([a-z-]+:)?TestResult[^>]* id="\K[^"]+' "$results" | head -n1 || true)"
+        [[ -n "$rid" ]] || die "no TestResult id found in $results"
+        echo ">> source    : $results"
+        echo ">> result-id : $rid"
+        oscap xccdf generate fix \
+            --fix-type bash \
+            --result-id "$rid" \
+            --output "$fixfile" \
+            "$results"
+    else
+        oscap xccdf generate fix \
+            --profile "$PROFILE" \
+            --fix-type bash \
+            --output "$fixfile" \
+            "$DS"
+    fi
 
     chmod 0700 "$fixfile"
-    echo ">> generated: $fixfile"
-    echo ">> lines    : $(wc -l < "$fixfile")"
+    echo ">> generated : $fixfile"
+    echo ">> lines     : $(wc -l < "$fixfile")"
+    echo ">> rules     : $(grep -c '^# BEGIN fix' "$fixfile" || true)"
     echo
     echo "DO NOT RUN THIS YET."
     echo "  1. Snapshot the VM."
-    echo "  2. Read it. Search for sshd, sudo, pam, fapolicyd, grub, audit."
+    echo "  2. Read it. Search for sshd, sudo, pam, fapolicyd, grub, audit, fips."
     echo "  3. Apply in stages and reboot between stages."
     echo "  4. Confirm you can still log in before applying the next stage."
 }
@@ -151,6 +181,6 @@ require_root
 case "${1:-}" in
     list) cmd_list ;;
     scan) cmd_scan "${2:-baseline}" ;;
-    fix)  cmd_fix ;;
-    *)    echo "usage: $0 {list|scan [baseline|post]|fix}"; exit 1 ;;
+    fix)  cmd_fix "${2:-}" ;;
+    *)    echo "usage: $0 {list|scan [baseline|post]|fix [results.xml]}"; exit 1 ;;
 esac

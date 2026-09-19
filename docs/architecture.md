@@ -11,9 +11,9 @@
 | VM | OS | RAM | vCPU | Disk | Address | Role |
 |---|---|---|---|---|---|---|
 | DC01 | Windows Server 2025 Standard | 4 GB | 2 | 60 GB thin | 10.10.10.10 | AD DS, DNS, Group Policy, STIG GPO distribution |
-| SIEM01 | Rocky Linux 9 (minimal) | 6 GB | 2 | 80 GB thin | 10.10.10.20 | Splunk indexer and search head |
+| SIEM01 | Rocky Linux 9 (minimal) | 6 GB | 2 | 80 GB thin | 10.10.10.20 | Log collection host (Splunk planned) |
 | RHEL01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 40 GB thin | 10.10.10.30 | OpenSCAP STIG hardening target |
-| WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, Sysmon, Atomic Red Team target, SCC scanning host |
+| WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, SCC scanning host; Sysmon and Atomic Red Team planned |
 | KALI01 | Kali Linux | 4 GB | 2 | 60 GB thin | 10.10.10.50 | Nessus scanner, attack platform |
 
 Rocky Linux was chosen for both Linux hosts because it is binary compatible with Red Hat
@@ -45,7 +45,8 @@ running adversary techniques.
 | Clipboard, drag-and-drop, shared folders | Disabled on the workstation |
 | USB passthrough | Disabled |
 
-Every temporary internet window is recorded with the date, host, purpose, and duration. "Isolated,
+Every temporary internet window is recorded with the date, host, purpose, and duration in
+[`internet-windows.md`](internet-windows.md). "Isolated,
 with these documented exceptions" is a defensible statement; "isolated" with an undocumented
 network adapter is not.
 
@@ -97,10 +98,14 @@ and hardening an attack platform is self-defeating.
 WS01 runs Windows 11 Pro rather than Enterprise. Microsoft's published Enterprise evaluation image
 was past its expiration date on download and enforced hourly shutdowns, so Pro was substituted.
 
-STIG rules requiring Enterprise-only features cannot be satisfied. The WS01 baseline confirms this
-concretely — `V-253370, Credential Guard must be running` appears as a CAT I failure with no
-remediation path on Pro. Each such rule is recorded in the POA&M as a risk-accepted item with the
-reason stated, rather than counted as a remediation failure.
+One STIG requirement depends on an Enterprise-only feature: `V-253370, Credential Guard must be
+running`, a CAT I failure in the WS01 baseline. Microsoft does not support Credential Guard on Pro,
+so it has no remediation path and is recorded in the POA&M as a risk-accepted item with the reason
+stated, rather than counted as a remediation failure.
+
+Other controls often assumed to be Enterprise-only are available on Pro and are treated as normal
+remediation items: BitLocker (backed by the VM's virtual TPM), and AppLocker, which Microsoft
+supports on all Windows 11 editions since KB5024351.
 
 ### What produces which number
 

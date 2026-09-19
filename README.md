@@ -123,22 +123,26 @@ first to establish the external view, then a credentialed scan with domain and S
 
 Per-host finding counts:
 
-| Host | Uncredentialed | Credentialed |
-|---|---|---|
-| DC01 | 58 | 229 |
-| WS01 | 20 | 233 |
-| RHEL01 | 22 | 53 |
-| SIEM01 | 5 | 37 |
+| Host | Uncredentialed | Credentialed | Critical | High | Medium |
+|---|---|---|---|---|---|
+| DC01 | 58 | 229 | 0 | 3 | 0 |
+| WS01 | 20 | 233 | 21 | 32 | 5 |
+| RHEL01 | 22 | 53 | 0 | 0 | 0 |
+| SIEM01 | 5 | 37 | 0 | 0 | 0 |
+| **Total** | **105** | **552** | **21** | **35** | **5** |
 
-Credentialed scanning returned roughly 4× the unique findings from the same hosts on the same
-network — the uncredentialed scan can enumerate open ports and service banners, but cannot read
-patch levels or local configuration.
+Credentialed scanning returned 2.7× the unique findings and 5.3× the total instances from the same
+hosts on the same network — an uncredentialed scan enumerates open ports and service banners, but
+cannot read installed package versions or local configuration, which is where missing patches live.
+
+WS01 carries every critical finding and 32 of 35 highs. The Rocky Linux hosts, patched during their
+build, returned no critical, high, or medium findings.
 
 | Severity | Baseline (credentialed) | Post-remediation | Remaining in POA&M |
 |---|---|---|---|
-| Critical | — | — | — |
-| High | — | — | — |
-| Medium | — | — | — |
+| Critical | 21 | — | — |
+| High | 35 | — | — |
+| Medium | 5 | — | — |
 
 ![Nessus scan results](screenshots/nessus-results.png)
 

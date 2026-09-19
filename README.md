@@ -142,7 +142,7 @@ patch levels or local configuration.
 
 ![Nessus scan results](screenshots/nessus-results.png)
 
-Sanitized reports are in [`scans/`](scans/).
+Full reports are in [`scans/`](scans/).
 
 ---
 
@@ -184,7 +184,7 @@ and what it does not catch. Full set in [`detections/`](detections/).
 federal-security-lab/
 ├── docs/           architecture, network diagram
 ├── configs/        Sysmon config, Splunk inputs/outputs, GPO notes
-├── scans/          OpenSCAP, SCC, and Nessus results (sanitized)
+├── scans/          OpenSCAP, SCC, and Nessus results
 ├── detections/     SPL searches with ATT&CK mapping
 ├── scripts/        scan automation
 └── screenshots/    walkthrough evidence

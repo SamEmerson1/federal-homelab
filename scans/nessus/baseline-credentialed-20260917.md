@@ -63,4 +63,4 @@ OpenSCAP and SCC, never from Nessus.
 
 ## Evidence
 
-`baseline-credentialed-20260917.pdf`
+[Full SCC report](https://samemerson1.github.io/federal-homelab/scans/scc/baseline-credentialed-20260917.html)

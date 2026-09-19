@@ -36,4 +36,4 @@ certificate detail — as a comparison point for the credentialed scan. It is no
 
 ## Evidence
 
-`baseline-uncredentialed-20260917.html`
+[Full Nessus report](https://samemerson1.github.io/federal-homelab/scans/nessus/baseline-uncredentialed-20260917.html)

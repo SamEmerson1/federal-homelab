@@ -23,7 +23,30 @@ All hosts sit on an isolated virtual network segment with no route to the physic
 production network. Internet access is temporary and deliberate — attached only for patching, then
 removed.
 
-![Network topology](screenshots/network-topology.png)
+```mermaid
+graph TB
+    subgraph LABNET["Isolated segment · 10.10.10.0/24 · no route to host or local network"]
+        DC01["DC01<br/>Windows Server 2025<br/>10.10.10.10<br/>AD DS · DNS · Group Policy"]
+        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk · :9997 :8000"]
+        RHEL01["RHEL01<br/>Rocky Linux 9<br/>10.10.10.30<br/>OpenSCAP STIG target"]
+        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>Sysmon · Atomic Red Team · SCC"]
+        KALI01["KALI01<br/>Kali Linux<br/>10.10.10.50<br/>Nessus scanner"]
+    end
+
+    WS01 -->|"domain join · Group Policy"| DC01
+    WS01 -->|"Sysmon + Windows event logs :9997"| SIEM01
+    DC01 -->|"Security + Directory Service logs :9997"| SIEM01
+    KALI01 -->|"credentialed scan"| DC01
+    KALI01 -->|"credentialed scan"| WS01
+    KALI01 -->|"credentialed scan"| RHEL01
+
+    classDef win fill:#1f3a5f,stroke:#4a7ab8,color:#ffffff
+    classDef lin fill:#1f4f3a,stroke:#4ab887,color:#ffffff
+    classDef atk fill:#5f1f2a,stroke:#b84a5f,color:#ffffff
+    class DC01,WS01 win
+    class SIEM01,RHEL01 lin
+    class KALI01 atk
+```
 
 See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation design, and
 [`docs/network-diagram.md`](docs/network-diagram.md) for the full topology.

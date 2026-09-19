@@ -7,6 +7,8 @@
 **Credentials:** none — `Auth: Fail` on all hosts is the intended result
 **Duration:** 22 minutes
 
+## Targets
+
 | IP | Host | Low | Info | Total |
 |---|---|---|---|---|
 | 10.10.10.10 | DC01 | 0 | 30 | 30 |

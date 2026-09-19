@@ -36,4 +36,4 @@ certificate detail — as a comparison point for the credentialed scan. It is no
 
 ## Evidence
 
-`baseline-uncredentialed-20260917.pdf`
+`baseline-uncredentialed-20260917.html`

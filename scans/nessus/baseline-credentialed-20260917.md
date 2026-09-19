@@ -35,8 +35,8 @@ Counts are taken from the committed report.
 
 ## Notes
 
-**Credentialed vs uncredentialed.** Roughly 4× the unique findings from the same hosts on the same
-network in 7 additional minutes. Uncredentialed scanning enumerates what a service exposes;
+**Credentialed vs uncredentialed.** 6× the findings (70 → 421 instances, 40 → 244 unique plugins)
+from the same hosts on the same network in 7 additional minutes. Uncredentialed scanning enumerates what a service exposes;
 credentialed scanning reads installed package versions and local configuration, which is where
 missing patches appear. This is why credentialed scanning is the standard in operational
 vulnerability management programs.

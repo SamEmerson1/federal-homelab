@@ -118,6 +118,7 @@ Enterprise-only features (Credential Guard, AppLocker) cannot be satisfied. Rati
 
 Nessus scans from KALI01 against all four non-scanner hosts. An uncredentialed baseline was taken
 first to establish the external view, then a credentialed scan with domain and SSH credentials.
+
 | Scan | Hosts | Unique plugins | Finding instances | Duration |
 |---|---|---|---|---|
 | Uncredentialed baseline | 4 | 40 | 70 | 22 min |
@@ -151,6 +152,7 @@ Full reports are in [`scans/`](scans/).
 ---
 
 ## Detection engineering
+**Status:** in progress — Splunk deployment pending.
 
 Windows Security, PowerShell, and Sysmon logs forward from DC01 and WS01 into Splunk. Each
 detection is written against a stated hypothesis, then validated by executing the corresponding
@@ -163,8 +165,6 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 | Scheduled Task/Job | T1053.005 | Security 4698, Sysmon EID 1 | — |
 | Abuse Elevation Control: UAC Bypass | T1548.002 | Sysmon EID 1, 13 | — |
 | Clear Windows Event Logs | T1070.001 | Security 1102, System 104 | — |
-
-
 
 ---
 
@@ -180,7 +180,7 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 ## Repository
 
 ```
-federal-homelablab/
+federal-homelab/
 ├── docs/           architecture, network diagram
 ├── scans/          OpenSCAP, SCC, and Nessus results
 ├── detections/     SPL searches with ATT&CK mapping

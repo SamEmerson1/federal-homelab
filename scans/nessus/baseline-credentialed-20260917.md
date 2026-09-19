@@ -20,23 +20,18 @@ both are disabled again when the scan completes.
 
 ## Results
 
-| IP | Host | Uncredentialed | Credentialed |
-|---|---|---|---|
-| 10.10.10.10 | DC01 | 58 | 229 |
-| 10.10.10.20 | SIEM01 | 5 | 37 |
-| 10.10.10.30 | RHEL01 | 22 | 53 |
-| 10.10.10.40 | WS01 | 20 | 233 |
+Counts are taken from the committed report.
 
-**Unique vulnerabilities:** 85 (uncredentialed: 32)
-**Remediation actions identified:** 9
+| IP | Host | Critical | High | Medium | Low | Info | Total |
+|---|---|---|---|---|---|---|---|
+| 10.10.10.10 | DC01 | 0 | 3 | 0 | 0 | 140 | 143 |
+| 10.10.10.20 | SIEM01 | 0 | 0 | 0 | 1 | 37 | 38 |
+| 10.10.10.30 | RHEL01 | 0 | 0 | 0 | 1 | 53 | 54 |
+| 10.10.10.40 | WS01 | 21 | 32 | 5 | 1 | 127 | 186 |
+| | **Total** | **21** | **35** | **5** | **3** | **357** | **421** |
 
-WS01 severity breakdown: 21 critical, 32 high, 5 medium, 175 informational.
-
-| Severity | Count |
-|---|---|
-| Critical | — |
-| High | — |
-| Medium | — |
+**Unique plugins:** 244 (uncredentialed: 40)
+**Finding instances:** 421 (uncredentialed: 70)
 
 ## Notes
 

@@ -39,6 +39,7 @@ graph TB
     KALI01 -->|"credentialed scan"| DC01
     KALI01 -->|"credentialed scan"| WS01
     KALI01 -->|"credentialed scan"| RHEL01
+    KALI01 -->|"credentialed scan"| SIEM01
 
     classDef win fill:#1f3a5f,stroke:#4a7ab8,color:#ffffff
     classDef lin fill:#1f4f3a,stroke:#4ab887,color:#ffffff

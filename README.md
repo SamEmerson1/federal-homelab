@@ -90,7 +90,7 @@ Baseline scan, remediation, rescan, against DISA STIG benchmarks.
 
 | Target | Benchmark | Tool | Before | After |
 |---|---|---|---|---|
-| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP 1.3.14 | 44.9% | — |
+| RHEL01 | DISA STIG for RHEL 9 | OpenSCAP 1.3.14 | 44.9% | **95.4%** |
 | WS01 | Microsoft Windows 11 STIG V2R10 | SCC 5.15 | 38.84% | — |
 | DC01 | Microsoft Windows Server 2025 STIG V1R1 | SCC 5.15 | 42.74% | — |
 
@@ -101,6 +101,16 @@ Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 | RHEL01 | 167 | 258 | 42 | 10 | 11 | 224 | 20 |
 | WS01 | 94 | 148 | 5 | 10 | 13 | 127 | 8 |
 | DC01 | 103 | 138 | 21 | 29 | 11 | 119 | 8 |
+
+RHEL01 after remediation, same benchmark, profile, and scoring method:
+
+| Target | Pass | Fail | N/A | Not checked | High fail | Medium fail | Low fail |
+|---|---|---|---|---|---|---|---|
+| RHEL01 | 410 | 17 | 40 | 10 | 1 | 11 | 5 |
+
+258 failed rules were reduced to 17, applied in five reviewed stages with a snapshot and a login
+test between each. Every remaining failure has a stated reason and carries into the POA&M:
+[`docs/rhel01-remediation.md`](docs/rhel01-remediation.md).
 
 ![OpenSCAP compliance report](screenshots/openscap-report.png)
 
@@ -177,6 +187,7 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 | [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing, scan scope |
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
 | [`docs/internet-windows.md`](docs/internet-windows.md) | Log of temporary internet access for patching |
+| [`docs/rhel01-remediation.md`](docs/rhel01-remediation.md) | RHEL01 STIG remediation: staging, deviations, and open items |
 
 ---
 

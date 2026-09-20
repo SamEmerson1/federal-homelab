@@ -6,6 +6,7 @@ adapter is moved to NAT for that task and moved back afterwards. Each window is 
 | Date | Host | Purpose | Duration | Returned to LABNET |
 |---|---|---|---|---|
 |2026-09-19|RHEL01|Fetched scan script|~14 min|Yes|
+|2026-09-19|RHEL01|Ran NAT install script|~14 min|Yes|
 
 Windows opened during the initial build, before this log was started, were not individually
 recorded.

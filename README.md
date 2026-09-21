@@ -134,6 +134,7 @@ first to establish the external view, then a credentialed scan with domain and S
 |---|---|---|---|---|
 | Uncredentialed baseline | 4 | 40 | 70 | 22 min |
 | Credentialed baseline | 4 | 244 | 421 | 29 min |
+| Credentialed, post-patch | 4 | 187 | 378 | — |
 
 | Host | Uncredentialed | Credentialed | Critical | High | Medium | Low |
 |---|---|---|---|---|---|---|
@@ -150,12 +151,22 @@ versions or local configuration, which is where missing patches live.
 WS01 carries every critical finding and 32 of 35 highs. The Rocky Linux hosts, patched during their
 build, returned no critical, high, or medium findings.
 
-| Severity | Baseline (credentialed) | Post-remediation | Remaining in POA&M |
+| Severity | Baseline (credentialed) | Post-patch | Remaining in POA&M |
 |---|---|---|---|
-| Critical | 21 | — | — |
-| High | 35 | — | — |
-| Medium | 5 | — | — |
-| Low | 3 | — | — |
+| Critical | 21 | **0** | — |
+| High | 35 | **0** | — |
+| Medium | 5 | **0** | — |
+| Low | 3 | **0** | — |
+
+All 64 actionable findings were closed: 57 by patching WS01 and DC01, 4 by specific configuration
+fixes (WinVerifyTrust certificate padding check on both Windows hosts, the Intel BHI speculative
+execution mitigation, and a pending-reboot completion), 2 by blocking ICMP timestamp requests on the
+Linux hosts, and 1 by updating Defender signatures. Details in
+[`scans/nessus/post-patch-credentialed-20260921.md`](scans/nessus/post-patch-credentialed-20260921.md).
+
+Scanning used a dedicated `svc-nessus` domain account rather than a Domain Admin, since the Windows
+11 STIG denies privileged domain accounts logon rights on workstations. Remote Registry was enabled
+only for the scan window and disabled afterwards.
 
 ![Nessus scan results](screenshots/nessus-results.png)
 

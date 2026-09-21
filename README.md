@@ -164,13 +164,13 @@ execution mitigation, and a pending-reboot completion), 2 by blocking ICMP times
 Linux hosts, and 1 by updating Defender signatures. Details in
 [`scans/nessus/post-patch-credentialed-20260921.md`](scans/nessus/post-patch-credentialed-20260921.md).
 
+![Nessus scan results](screenshots/nessus-results.png)
+
 ![Post patch credentialed results](screenshots/postpatch-nessus-scan.png)
 
 Scanning used a dedicated `svc-nessus` domain account rather than a Domain Admin, since the Windows
 11 STIG denies privileged domain accounts logon rights on workstations. Remote Registry was enabled
 only for the scan window and disabled afterwards.
-
-![Nessus scan results](screenshots/nessus-results.png)
 
 Full reports are in [`scans/`](scans/).
 

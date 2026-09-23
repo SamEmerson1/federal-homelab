@@ -7,6 +7,8 @@ control documentation.
 
 Five virtual machines, a Windows domain, an attack platform, and a documented set of findings.
 
+![RHEL01 Warning](screenshots/rhel01-warning.png)
+
 ---
 
 ## Environment

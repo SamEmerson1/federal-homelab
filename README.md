@@ -74,8 +74,10 @@ Workstations OU so hardening policy can be scoped away from the domain controlle
 | Windows compliance scanning | SCAP Compliance Checker (SCC) 5.15 | In use |
 | Vulnerability assessment | Tenable Nessus — credentialed and uncredentialed scanning | In use |
 | Virtualization | VMware Workstation Pro | In use |
-| Linux hardening | OpenSCAP-generated remediation, applied in reviewed stages | In progress |
-| Windows hardening | DISA STIG Group Policy Objects | In progress |
+| Linux hardening | OpenSCAP-generated remediation, applied in reviewed stages | In use |
+| Windows hardening | DISA STIG Group Policy Objects, scoped by OU with loopback processing | In use |
+| Full-disk encryption | BitLocker, TPM + PIN pre-boot authentication, recovery keys escrowed to AD | In use |
+| Password policy | Domain baseline plus fine-grained policy for privileged accounts | In use |
 | Endpoint telemetry | Sysmon | Planned |
 | Log aggregation | Splunk Enterprise with Universal Forwarders | Planned |
 | Detection engineering | SPL searches mapped to MITRE ATT&CK | Planned |
@@ -91,8 +93,8 @@ Baseline scan, remediation, rescan, against DISA STIG benchmarks.
 | Target | Benchmark | Tool | Before | After |
 |---|---|---|---|---|
 | RHEL01 | DISA STIG for RHEL 9 | OpenSCAP 1.3.14 | 44.9% | **95.4%** |
-| WS01 | Microsoft Windows 11 STIG V2R10 | SCC 5.15 | 38.84% | — |
-| DC01 | Microsoft Windows Server 2025 STIG V1R1 | SCC 5.15 | 42.74% | — |
+| WS01 | Microsoft Windows 11 STIG V2R10 | SCC 5.15 | 38.84% | **97.11%** |
+| DC01 | Microsoft Windows Server 2025 STIG V1R1 | SCC 5.15 | 42.74% | Deferred — [POA&M](docs/poam.md) |
 
 Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 
@@ -102,15 +104,26 @@ Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
 | WS01 | 94 | 148 | 5 | 10 | 13 | 127 | 8 |
 | DC01 | 103 | 138 | 21 | 29 | 11 | 119 | 8 |
 
-RHEL01 after remediation, same benchmark, profile, and scoring method:
+After remediation, same benchmark, profile, and scoring method:
 
-| Target | Pass | Fail | N/A | Not checked | High fail | Medium fail | Low fail |
+| Target | Pass | Fail | N/A | Not checked | CAT I fail | CAT II fail | CAT III fail |
 |---|---|---|---|---|---|---|---|
 | RHEL01 | 410 | 17 | 40 | 10 | 1 | 11 | 5 |
+| WS01 | 235 | 7 | 5 | 10 | 1 | 6 | 0 |
 
-258 failed rules were reduced to 17, applied in five reviewed stages with a snapshot and a login
-test between each. Every remaining failure has a stated reason and carries into the POA&M:
+**RHEL01:** 258 failed rules reduced to 17, applied in five reviewed stages with a snapshot and a
+login test between each. Method, deviations, and a conflict found inside the benchmark content:
 [`docs/rhel01-remediation.md`](docs/rhel01-remediation.md).
+
+**WS01:** 148 failed rules reduced to 7, including 12 of 13 CAT I findings, using DISA's published
+Group Policy Objects scoped to a Workstations OU with supplemental policy for the gaps the package
+leaves open. The work surfaced three defects in the published GPO package — contradictory BitLocker
+startup options, an omitted recovery-escrow policy that leaves an encrypted host unrecoverable, and
+two releases of drift behind the benchmark being scanned against:
+[`docs/ws01-stig-gpo.md`](docs/ws01-stig-gpo.md).
+
+Every remaining failure on both hosts has a stated reason and carries into the
+[POA&M](docs/poam.md).
 
 ![OpenSCAP compliance report](screenshots/openscap-report.png)
 
@@ -122,6 +135,14 @@ SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monito
 KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so the one STIG rule requiring an
 Enterprise-only feature (Credential Guard) cannot be satisfied. Rationale for all three in
 [`docs/architecture.md`](docs/architecture.md).
+
+**DC01 is assessed but not remediated in this phase.** It is the sole domain controller, with no
+replication partner. The Server 2025 STIG's authentication controls — LDAP and SMB signing, NTLM
+restrictions, Kerberos encryption types — alter the authentication path every other host depends on,
+including the scanner service account and the administrative access used to perform the remediation.
+Applying them without a second domain controller and a per-dependency rollback plan exceeds the risk
+tolerance for this phase, so the baseline stands and the deferral is recorded with its reasoning in
+the [POA&M](docs/poam.md).
 
 ---
 
@@ -201,6 +222,8 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
 | [`docs/internet-windows.md`](docs/internet-windows.md) | Log of temporary internet access for patching |
 | [`docs/rhel01-remediation.md`](docs/rhel01-remediation.md) | RHEL01 STIG remediation: staging, deviations, and open items |
+| [`docs/ws01-stig-gpo.md`](docs/ws01-stig-gpo.md) | WS01 STIG remediation: GPO import and scoping, package defects, BitLocker, VBS |
+| [`docs/poam.md`](docs/poam.md) | Plan of Action and Milestones — every open finding with its reason and closure path |
 
 ---
 
@@ -208,7 +231,7 @@ Atomic Red Team test and confirming the search fires on real telemetry.
 
 ```
 federal-homelab/
-├── docs/           architecture, network diagram
+├── docs/           architecture, remediation method, POA&M
 ├── scans/          OpenSCAP, SCC, and Nessus results
 ├── detections/     SPL searches with ATT&CK mapping
 ├── scripts/        scan automation

@@ -84,6 +84,32 @@ SCAP scanners read local registry, policy, and filesystem state, so they run loc
 rather than remotely. Nessus scans across the network from KALI01, because it assesses exposed
 services and patch levels rather than local configuration.
 
+### Remediation scope
+
+Assessment scope and remediation scope are not the same thing. A host can be assessed and its
+baseline published without being remediated, and saying so is more useful than leaving the column
+blank.
+
+| Host | Assessed | Remediated |
+|---|---|---|
+| RHEL01 | Yes | Yes — OpenSCAP, staged |
+| WS01 | Yes | Yes — DISA STIG GPOs |
+| DC01 | Yes | **Deferred** |
+
+DC01 is the only domain controller in this environment. The Windows Server 2025 STIG's
+authentication controls — LDAP signing and channel binding, SMB signing, NTLM restrictions, and
+Kerberos encryption-type constraints — change the authentication path that every other host depends
+on: the workstation's secure channel, the scanner service account, time synchronisation for the
+Linux hosts, and the administrative access used to apply and roll back the policy itself. With no
+replication partner to fail over to, a policy change that breaks authentication also removes the
+means of fixing it.
+
+Remediation is therefore deferred until a second domain controller exists, and is recorded in the
+[POA&M](poam.md) with its reasoning rather than treated as incomplete work. The scanning-account
+design already reflects the same constraint: credentialed scans use a purpose-built domain account
+rather than a Domain Admin, because the workstation STIG denies privileged domain accounts every
+logon type.
+
 ### Exclusions
 
 **SIEM01** is the monitoring platform. Applying the STIG baseline would conflict with Splunk's port
@@ -103,9 +129,12 @@ running`, a CAT I failure in the WS01 baseline. Microsoft does not support Crede
 so it has no remediation path and is recorded in the POA&M as a risk-accepted item with the reason
 stated, rather than counted as a remediation failure.
 
-Other controls often assumed to be Enterprise-only are available on Pro and are treated as normal
-remediation items: BitLocker (backed by the VM's virtual TPM), and AppLocker, which Microsoft
-supports on all Windows 11 editions since KB5024351.
+Other controls often assumed to be Enterprise-only are available on Pro and were treated as normal
+remediation items. BitLocker, backed by the VM's virtual TPM, is enabled with TPM + PIN pre-boot
+authentication and recovery keys escrowed to Active Directory. Virtualization-based security and
+HVCI both run, once the hypervisor feature is present and the VM exposes CPU virtualization
+extensions — Credential Guard is the only one of the three that the edition actually gates.
+AppLocker is likewise supported on all Windows 11 editions since KB5024351.
 
 ### What produces which number
 

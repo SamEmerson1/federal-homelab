@@ -118,13 +118,13 @@ conversion, re-escrow. Deferred maintenance.
 |---|---|---|
 | Platform substitution | 1 | Rocky Linux 9 in place of RHEL 9; one rule tests Red Hat-specific packaging |
 | Filesystem layout | 6 | Separate partitions for `/var`, `/var/log`, `/var/log/audit`, `/var/tmp`, `/home`, `/tmp` — requires a rebuild, not a configuration change |
-| Missing lab infrastructure | 7 | Controls depending on services this environment does not run: remote log aggregation, centralised authentication, time-stamped certificate authority |
+| Missing lab infrastructure | 7 | Controls depending on services this environment does not run: a remote log collector (5 rules), a second DNS server (1), and smart card PKI for certificate mapping (1) |
 | Risk-based deferral | 2 | Accepted with stated reasons |
 | Benchmark self-conflict | 1 | `scap-security-guide` 0.1.82 contains rules demanding mutually exclusive SSH MAC orderings; see [`rhel01-remediation.md`](rhel01-remediation.md) |
 
-The filesystem-layout items close at next rebuild. The infrastructure items close as the lab grows —
-remote log forwarding in particular becomes available once Splunk is deployed on SIEM01, which is
-already planned.
+The filesystem-layout items close at next rebuild. Of the seven infrastructure items, the five
+log-forwarding rules become closable once a collector runs on SIEM01, which is planned for the
+current phase. The DNS and PKI items remain open with no planned closure.
 
 ---
 

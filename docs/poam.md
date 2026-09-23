@@ -118,13 +118,22 @@ conversion, re-escrow. Deferred maintenance.
 |---|---|---|
 | Platform substitution | 1 | Rocky Linux 9 in place of RHEL 9; one rule tests Red Hat-specific packaging |
 | Filesystem layout | 6 | Separate partitions for `/var`, `/var/log`, `/var/log/audit`, `/var/tmp`, `/home`, `/tmp` — requires a rebuild, not a configuration change |
-| Missing lab infrastructure | 7 | Controls depending on services this environment does not run: a remote log collector (5 rules), a second DNS server (1), and smart card PKI for certificate mapping (1) |
+| Missing lab infrastructure | 7 | Filed as controls depending on services this environment does not run: a remote log collector (4 rules), a second DNS server (1), and smart card PKI for certificate mapping (1). The seventh, `rsyslog_remote_access_monitoring`, was filed here in error — see below |
 | Risk-based deferral | 2 | Accepted with stated reasons |
 | Benchmark self-conflict | 1 | `scap-security-guide` 0.1.82 contains rules demanding mutually exclusive SSH MAC orderings; see [`rhel01-remediation.md`](rhel01-remediation.md) |
 
-The filesystem-layout items close at next rebuild. Of the seven infrastructure items, the five
+The filesystem-layout items close at next rebuild. Of the infrastructure items, the four
 log-forwarding rules become closable once a collector runs on SIEM01, which is planned for the
 current phase. The DNS and PKI items remain open with no planned closure.
+
+**Misclassified: `rsyslog_remote_access_monitoring`.** Grouped with the log-forwarding rules at
+the time of remediation on the strength of its title. Its OVAL definition in
+`scap-security-guide` 0.1.82 tests `/etc/rsyslog.conf` and `/etc/rsyslog.d/*.conf` for selector
+lines covering `auth.*`, `authpriv.*`, and `daemon.*` that write to a file or forward — a local
+destination satisfies it, and no remote host is required. "Remote access" in the title refers to
+the access methods being logged, not to where the logs go. The current configuration fails on
+`auth.*` and `daemon.*`; `authpriv.*` already matches. Closable without new infrastructure and
+scheduled with the rsyslog work.
 
 ---
 

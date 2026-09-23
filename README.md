@@ -127,7 +127,11 @@ Every remaining failure on both hosts has a stated reason and carries into the
 
 ![OpenSCAP compliance report](screenshots/openscap-report.png)
 
+![OpenSCAP compliance report (post hardened)](screenshots/openscap-report-hardened.png)
+
 ![SCC compliance report](screenshots/scc-report.png)
+
+![SCC compliance report (post hardened)](screenshots/post-hardenings-scc.png)
 
 ### Scan scope
 

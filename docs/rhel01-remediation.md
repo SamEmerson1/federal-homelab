@@ -31,6 +31,11 @@ applied, and where the applied configuration departs from the generated fixes.
 | 5 | 10 | GRUB kernel arguments, fapolicyd default deny, usbguard |
 | Manual | 5 | FIPS mode, GRUB superuser and password, `user.max_user_namespaces`, usbguard audit backend, postfix relay restriction |
 
+Stage 1 applied, followed by two of the manual deviations described below — the firewalld ICMP
+block and the user-namespace restriction:
+
+![Stage 1 remediation, 69 rules, followed by the firewalld and sysctl deviations](../screenshots/remediation-progress.png)
+
 ## Deviations from the generated fixes
 
 Four changes depart from what the content produced. Each is a deliberate, documented decision.

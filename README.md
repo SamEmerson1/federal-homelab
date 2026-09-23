@@ -7,7 +7,14 @@ control documentation.
 
 Five virtual machines, a Windows domain, an attack platform, and a documented set of findings.
 
-![RHEL01 Warning](screenshots/rhel01-warning.png)
+| Outcome | Result |
+|---|---|
+| RHEL 9 STIG compliance | 44.9% → **95.4%** · 258 failed rules to 17 |
+| Windows 11 STIG compliance | 38.84% → **97.11%** · 148 failed rules to 7, 12 of 13 CAT I closed |
+| Credentialed vulnerability findings | 21 critical and 35 high → **0** |
+| Defects found in published DISA content | **4**, each reproducible and documented |
+
+![DoD notice and consent banner, enforced on RHEL01 by the STIG baseline](screenshots/rhel01-warning.png)
 
 ---
 
@@ -51,8 +58,9 @@ graph TB
     class KALI01 atk
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) for addressing and isolation design, and
-[`docs/network-diagram.md`](docs/network-diagram.md) for the full topology.
+See [`docs/architecture.md`](docs/architecture.md) for addressing, the VM inventory, and the
+isolation design, and [`docs/network-diagram.md`](docs/network-diagram.md) for the log and
+assessment flows.
 
 ### Active Directory
 
@@ -127,19 +135,40 @@ two releases of drift behind the benchmark being scanned against:
 Every remaining failure on both hosts has a stated reason and carries into the
 [POA&M](docs/poam.md).
 
-![OpenSCAP compliance report](screenshots/openscap-report.png)
+### Defects found in the published content
 
-![OpenSCAP compliance report (post hardened)](screenshots/openscap-report-hardened.png)
+Applying STIG content carefully surfaces problems in the content itself. Four, each reproducible:
 
-![SCC compliance report](screenshots/scc-report.png)
+| Finding | Effect |
+|---|---|
+| The Windows 11 GPO package's BitLocker startup options are mutually exclusive — TPM-only permitted, a startup PIN required, and no-TPM operation allowed simultaneously | `Enable-BitLocker` refuses the combination with `0x8031005B`. Resolved by a scoped override GPO |
+| The same package enforces pre-boot authentication but never sets the recovery-escrow policy | A host configured strictly from the package encrypts behind a PIN with **no recovery key escrowed anywhere**. One forgotten PIN makes it unrecoverable |
+| The GPO package is two releases behind the SCAP benchmark published alongside it, and its manifest lists GUIDs the archive does not contain | Three V2R10 rules have no setting in the v2r8 package and fail after a clean import. Supplemental policy supplies them |
+| `scap-security-guide` 0.1.82 contains rules demanding mutually exclusive SSH MAC orderings | No configuration satisfies all three. Documented with the ordering chosen and the rule it costs |
 
-![SCC compliance report (post hardened)](screenshots/post-hardenings-scc.png)
+None of these are visible from a passing score. They came out of reading the OVAL definitions behind
+the rules rather than the rule titles — which also changed the BitLocker remediation from a
+multi-hour full-volume re-encryption into a metadata operation, once it was clear the rule tests
+protection status alone.
+
+RHEL01, OpenSCAP — baseline then post-remediation:
+
+![RHEL01 OpenSCAP baseline, 44.9%](screenshots/openscap-report.png)
+
+![RHEL01 OpenSCAP post-remediation, 95.4%](screenshots/openscap-report-hardened.png)
+
+WS01, SCAP Compliance Checker — baseline then post-remediation:
+
+![WS01 SCC baseline, 38.84%, compliance status RED](screenshots/scc-report.png)
+
+![WS01 SCC post-remediation, 97.11%, compliance status GREEN](screenshots/post-hardenings-scc.png)
 
 ### Scan scope
 
 SIEM01 and KALI01 are excluded from compliance scanning — SIEM01 as the monitoring platform,
-KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so the one STIG rule requiring an
-Enterprise-only feature (Credential Guard) cannot be satisfied. Rationale for all three in
+KALI01 as the assessment platform. WS01 runs Windows 11 Pro, so the two STIG rules that depend on an
+Enterprise-only feature — Credential Guard, and the edition requirement behind it — cannot be
+satisfied. Rationale for all three in
 [`docs/architecture.md`](docs/architecture.md).
 
 **DC01 is assessed but not remediated in this phase.** It is the sole domain controller, with no
@@ -161,7 +190,7 @@ first to establish the external view, then a credentialed scan with domain and S
 |---|---|---|---|---|
 | Uncredentialed baseline | 4 | 40 | 70 | 22 min |
 | Credentialed baseline | 4 | 244 | 421 | 29 min |
-| Credentialed, post-patch | 4 | 187 | 378 | — |
+| Credentialed, post-patch | 4 | 187 | 378 (all informational) | — |
 
 | Host | Uncredentialed | Credentialed | Critical | High | Medium | Low |
 |---|---|---|---|---|---|---|
@@ -206,9 +235,10 @@ Full reports are in [`scans/`](scans/).
 ## Detection engineering
 **Status:** in progress — Splunk deployment pending.
 
-Windows Security, PowerShell, and Sysmon logs forward from DC01 and WS01 into Splunk. Each
-detection is written against a stated hypothesis, then validated by executing the corresponding
-Atomic Red Team test and confirming the search fires on real telemetry.
+Windows Security, PowerShell, and Sysmon logs will forward from DC01 and WS01 into Splunk. Each
+detection is written against a stated hypothesis, and is not counted as a detection until it has
+been validated by executing the corresponding Atomic Red Team test and confirming the search fires
+on real telemetry. The entries below are drafts until that pipeline exists.
 
 | Technique | ATT&CK ID | Log source | Detection |
 |---|---|---|---|
@@ -252,6 +282,30 @@ A personal training environment, not an accredited system. Compliance percentage
 virtual machines. STIG and SCAP content is published by DISA and NIWC Atlantic; this repository
 contains only results generated against it.
 
-AI assistance (Claude, Anthropic) was used for planning, drafting documentation, and reviewing
-configurations. All scanning, hardening, and detection validation was performed by me in this
-environment, and every figure above traces to a scan output committed to `scans/`.
+### AI assistance
+
+I used Claude (Anthropic) as a working partner through the build and remediation phases. "AI
+assisted" can mean anything from proofreading to generating the whole project, so the split is
+stated precisely:
+
+| Performed by me | AI-assisted |
+|---|---|
+| Built and configured the environment: five virtual machines, the isolated segment, the `lab.local` domain, and the OU design | Phase planning and the order work was carried out in |
+| Ran every OpenSCAP, SCC, and Nessus scan on my own hosts | Reading the OVAL and XCCDF internals of the resulting reports and explaining what a rule actually tests |
+| Executed every remediation command, GPO import, and policy change | Proposing those commands and the `scripts/` contents, which I reviewed before running |
+| Diagnosed and recovered from failures — filesystem corruption during patching, a truncated virtual disk, and a workstation that logged in to no shell | Interpreting error output I pasted back, and narrowing the hypotheses |
+| Every decision: scope, risk acceptance, what to defer, when to roll back, what to publish | Drafting the prose in this README and `docs/`, which I reviewed and edited |
+| All screenshots and every figure in this repository | Looking up vendor documentation and version specifics |
+
+Every number here comes from a scan I ran against these machines, recorded in a report committed to
+`scans/`. No figure, result, or scan output in this repository was produced by AI.
+
+Where AI guidance and observed output disagreed, the output won. Two examples worth naming, because
+they are the reason the verification steps in `docs/` exist: a Group Policy migration-table
+instruction was given backwards, which would have silently imported unresolvable principals into
+User Rights Assignment and left the workstation reporting as configured while enforcing nothing —
+caught by exporting the applied policy and checking for resolved SIDs rather than trusting the GPO
+report. Separately, a proposed root cause for a PowerShell module failure was contradicted by the
+evidence, and the actual cause turned out to be a corrupt file the servicing tools could not repair.
+
+Commits where AI assisted carry a `Co-Authored-By` trailer, so the history distinguishes them.

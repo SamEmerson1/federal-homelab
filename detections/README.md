@@ -3,9 +3,10 @@
 One file per detection, named `<ATT&CK-ID>-<slug>.md`. Each documents the hypothesis, the SPL, the
 false positives it will produce, the analyst response, and what it does not catch.
 
-A search that has never run against real telemetry is a hypothesis, not a detection. Every entry
-here is validated by executing the matching Atomic Red Team technique on WS01 and confirming the
-search fires on the resulting events.
+A search that has never run against real telemetry is a hypothesis, not a detection. No entry here
+is marked validated until the matching Atomic Red Team technique has been executed on WS01 and the
+search confirmed to fire on the resulting events. Until Splunk is deployed on SIEM01, every entry
+is a draft by definition, and is labelled as one.
 
 | Technique | ATT&CK ID | Primary log source | Status |
 |---|---|---|---|

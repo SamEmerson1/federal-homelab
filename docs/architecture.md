@@ -11,7 +11,7 @@
 | VM | OS | RAM | vCPU | Disk | Address | Role |
 |---|---|---|---|---|---|---|
 | DC01 | Windows Server 2025 Standard | 4 GB | 2 | 60 GB thin | 10.10.10.10 | AD DS, DNS, Group Policy, STIG GPO distribution |
-| SIEM01 | Rocky Linux 9 (minimal) | 6 GB | 2 | 80 GB thin | 10.10.10.20 | Log collection host (Splunk planned) |
+| SIEM01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 80 GB thin | 10.10.10.20 | Log collection host (Splunk planned) |
 | RHEL01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 40 GB thin | 10.10.10.30 | OpenSCAP STIG hardening target |
 | WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, SCC scanning host; Sysmon and Atomic Red Team planned |
 | KALI01 | Kali Linux | 4 GB | 2 | 60 GB thin | 10.10.10.50 | Nessus scanner, attack platform |
@@ -19,6 +19,11 @@
 Rocky Linux was chosen for both Linux hosts because it is binary compatible with Red Hat
 Enterprise Linux, which is what the RHEL 9 DISA STIG targets and what most federal Linux estates
 run.
+
+WS01 additionally exposes CPU virtualization extensions and an IOMMU to the guest. The STIG requires
+virtualization-based security, which runs inside Hyper-V's hypervisor; without nested virtualization
+the policy applies but the feature reports as configured and not running. SIEM01 was reduced to 2 GB
+to return host memory for that overhead.
 
 ## Network design
 

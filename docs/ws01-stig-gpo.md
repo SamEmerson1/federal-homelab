@@ -109,6 +109,13 @@ has highest precedence.
 | 5 | `Lab - Workstation Loopback (Merge)` | `UserPolicyMode = 2` |
 | — | `Lab - STIG V2R10 Supplement` | The three V2R10 rules absent from v2r8, Computer and User halves |
 
+`Lab - Nessus Scan Account` grants the scanner its local administrator rights through Group Policy
+Preferences rather than by hand, so the grant is auditable and reversible by unlinking one GPO.
+Captured before the STIG GPOs were linked, which is why the Workstations OU shows a single link
+here:
+
+![Lab - Nessus Scan Account GPO adding LAB\\svc-nessus to the local Administrators group](../screenshots/gpmc-gpo-settings.png)
+
 ## Defects found in the DISA package
 
 Three issues in the published content, each reproducible:

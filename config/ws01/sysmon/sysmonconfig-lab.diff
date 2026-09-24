@@ -1,0 +1,11 @@
+Upstream: sysmon-modular release configs-082cba578667, asset sysmonconfig.xml
+          https://github.com/olafhartong/sysmon-modular/releases/download/configs-082cba578667/sysmonconfig.xml
+          SHA-256 F115AAC5770DAE468E5CFB48C58A8B6E37588208A31F1B746812C534577A244B
+Loaded:   sysmonconfig-lab.xml
+          SHA-256 E9F105E2B995D91FDCE715FE97CA6B7B428A05698CEC300D178A8B2F3222F502
+          (matches the "Config hash" reported by `sysmon -c` on WS01)
+
+Only change, confirmed with Compare-Object on WS01:
+
+-  <HashAlgorithms>*</HashAlgorithms>
++  <HashAlgorithms>SHA256</HashAlgorithms>

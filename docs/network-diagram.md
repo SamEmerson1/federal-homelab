@@ -9,12 +9,12 @@ Addressing, the isolation boundary, and the VM inventory are in
 
 ## Log flow
 
-**Status:** planned — Splunk deployment pending.
+**Status:** live for WS01 since 2026-09-23. Build details in
+[`logging-pipeline.md`](logging-pipeline.md).
 
 ```mermaid
 flowchart LR
-    A["WS01<br/>Sysmon · Security<br/>PowerShell · System"] -->|"Universal Forwarder"| D["SIEM01<br/>index=lab_sysmon<br/>index=lab_win"]
-    B["DC01<br/>Security · Directory Service"] -->|"Universal Forwarder"| D
+    A["WS01<br/>Sysmon · Security<br/>PowerShell · System"] -->|"Universal Forwarder :9997"| D["SIEM01<br/>index=lab_sysmon<br/>index=lab_win"]
     D --> E["SPL detections<br/>mapped to MITRE ATT&CK"]
     E --> F["Dashboard and alerts"]
     G["Atomic Red Team<br/>WS01 only"] -.->|"generates telemetry"| A

@@ -11,9 +11,9 @@
 | VM | OS | RAM | vCPU | Disk | Address | Role |
 |---|---|---|---|---|---|---|
 | DC01 | Windows Server 2025 Standard | 4 GB | 2 | 60 GB thin | 10.10.10.10 | AD DS, DNS, Group Policy, STIG GPO distribution |
-| SIEM01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 80 GB thin | 10.10.10.20 | Log collection host (Splunk planned) |
+| SIEM01 | Rocky Linux 9 (minimal) | 6 GB | 2 | 80 GB thin | 10.10.10.20 | Splunk Enterprise — indexer and search head |
 | RHEL01 | Rocky Linux 9 (minimal) | 2 GB | 2 | 40 GB thin | 10.10.10.30 | OpenSCAP STIG hardening target |
-| WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, SCC scanning host; Sysmon and Atomic Red Team planned |
+| WS01 | Windows 11 Pro | 4 GB | 2 | 80 GB thin | 10.10.10.40 | Domain client, SCC scanning host; Splunk forwarder, Sysmon, Atomic Red Team target |
 | KALI01 | Kali Linux | 4 GB | 2 | 60 GB thin | 10.10.10.50 | Nessus scanner, attack platform |
 
 Rocky Linux was chosen for both Linux hosts because it is binary compatible with Red Hat
@@ -22,8 +22,9 @@ run.
 
 WS01 additionally exposes CPU virtualization extensions and an IOMMU to the guest. The STIG requires
 virtualization-based security, which runs inside Hyper-V's hypervisor; without nested virtualization
-the policy applies but the feature reports as configured and not running. SIEM01 was reduced to 2 GB
-to return host memory for that overhead.
+the policy applies but the feature reports as configured and not running. SIEM01 ran at 2 GB during
+the hardening phase to leave memory for that overhead, and was raised to 6 GB for Splunk, whose
+key-value store and search processes do not fit in 2 GB.
 
 ## Network design
 
@@ -36,7 +37,7 @@ running adversary techniques.
 |---|---|
 | Subnet | 10.10.10.0/24 |
 | Domain | `lab.local` |
-| DNS | 10.10.10.10 (DC01) for all hosts |
+| DNS | 10.10.10.10 (DC01) for all hosts. SIEM01 and RHEL01 are not domain-joined, so their A records are static |
 | DHCP | Disabled — static addressing keeps scan targets stable |
 | Default gateway | None |
 
@@ -47,7 +48,8 @@ running adversary techniques.
 | Lab to physical host | Closed |
 | Lab to local network | Closed |
 | Lab to internet | Closed by default; opened temporarily for patching, then removed |
-| Clipboard, drag-and-drop, shared folders | Disabled on the workstation |
+| Clipboard, drag-and-drop | Disabled on the workstation |
+| Shared folders | Used only to move verified installers into the segment; each transfer is recorded in [`internet-windows.md`](internet-windows.md) |
 | USB passthrough | Disabled |
 
 Every temporary internet window is recorded with the date, host, purpose, and duration in
@@ -118,8 +120,14 @@ logon type.
 ### Exclusions
 
 **SIEM01** is the monitoring platform. Applying the STIG baseline would conflict with Splunk's port
-and service-account requirements during detection development. Excluded from compliance scanning as
-a documented scope limitation; still included in vulnerability scanning.
+and service-account requirements during detection development. Excluded from compliance scanning;
+still included in vulnerability scanning.
+
+That exclusion was made before SIEM01 held anything. It now stores WS01's security audit records,
+which makes it the most sensitive host in the lab rather than a support system: whoever controls it
+can read or delete the evidence of activity on every host that forwards to it (AU-9). The exclusion
+stands, and the risk it carries is recorded in the [POA&M](poam.md) as ENV-002 instead of being
+treated as a scope decision.
 
 **KALI01** is the assessment platform, not a target. It is Debian-based, no DISA STIG exists for it,
 and hardening an attack platform is self-defeating.

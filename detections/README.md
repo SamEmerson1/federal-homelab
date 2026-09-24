@@ -5,8 +5,8 @@ false positives it will produce, the analyst response, and what it does not catc
 
 A search that has never run against real telemetry is a hypothesis, not a detection. No entry here
 is marked validated until the matching Atomic Red Team technique has been executed on WS01 and the
-search confirmed to fire on the resulting events. Until Splunk is deployed on SIEM01, every entry
-is a draft by definition, and is labelled as one.
+search confirmed to fire on the resulting events. Splunk is receiving WS01 telemetry, and every
+entry remains a draft until that validation is done.
 
 | Technique | ATT&CK ID | Primary log source | Status |
 |---|---|---|---|

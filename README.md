@@ -23,9 +23,9 @@ Five virtual machines, a Windows domain, an attack platform, and a documented se
 | Host | OS | Role |
 |---|---|---|
 | **DC01** | Windows Server 2025 Standard | Active Directory Domain Services, DNS, Group Policy |
-| **WS01** | Windows 11 Pro (25H2) | Domain-joined workstation, SCC scanning host; Sysmon and attack simulation planned |
+| **WS01** | Windows 11 Pro (25H2) | Domain-joined workstation, SCC scanning host; Splunk forwarder and Sysmon; attack simulation target |
 | **RHEL01** | Rocky Linux 9.8 | STIG hardening target, OpenSCAP scanning |
-| **SIEM01** | Rocky Linux 9.8 | Log collection host; Splunk deployment planned |
+| **SIEM01** | Rocky Linux 9.8 | Splunk Enterprise 10.4.3 — log collection, search, detections |
 | **KALI01** | Kali Linux | Vulnerability scanner, attack platform |
 
 All hosts sit on an isolated virtual network segment with no route to the physical host or any
@@ -36,15 +36,14 @@ removed.
 graph TB
     subgraph LABNET["Isolated segment · 10.10.10.0/24 · no route to host or local network"]
         DC01["DC01<br/>Windows Server 2025<br/>10.10.10.10<br/>AD DS · DNS · Group Policy"]
-        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk (planned) · :9997 :8000"]
+        SIEM01["SIEM01<br/>Rocky Linux 9<br/>10.10.10.20<br/>Splunk Enterprise · :9997 :8000"]
         RHEL01["RHEL01<br/>Rocky Linux 9<br/>10.10.10.30<br/>OpenSCAP STIG target"]
-        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>SCC · Sysmon + ART (planned)"]
+        WS01["WS01<br/>Windows 11 Pro<br/>10.10.10.40<br/>SCC · UF + Sysmon · ART"]
         KALI01["KALI01<br/>Kali Linux<br/>10.10.10.50<br/>Nessus scanner"]
     end
 
     WS01 -->|"domain join · Group Policy"| DC01
-    WS01 -.->|"planned: Sysmon + Windows event logs :9997"| SIEM01
-    DC01 -.->|"planned: Security + Directory Service logs :9997"| SIEM01
+    WS01 -->|"Security · System · PowerShell · Sysmon :9997"| SIEM01
     KALI01 -->|"credentialed scan"| DC01
     KALI01 -->|"credentialed scan"| WS01
     KALI01 -->|"credentialed scan"| RHEL01
@@ -88,11 +87,11 @@ Workstations OU so hardening policy can be scoped away from the domain controlle
 | Windows hardening | DISA STIG Group Policy Objects, scoped by OU with loopback processing | In use |
 | Full-disk encryption | BitLocker, TPM + PIN pre-boot authentication, recovery keys escrowed to AD | In use |
 | Password policy | Domain baseline plus fine-grained policy for privileged accounts | In use |
-| Endpoint telemetry | Sysmon | Planned |
-| Log aggregation | Splunk Enterprise with Universal Forwarders | Planned |
-| Detection engineering | SPL searches mapped to MITRE ATT&CK | Planned |
+| Endpoint telemetry | Sysmon (built-in Windows feature), sysmon-modular configuration | In use |
+| Log aggregation | Splunk Enterprise 10.4.3 with Universal Forwarder | In use |
+| Detection engineering | SPL searches mapped to MITRE ATT&CK | In progress |
 | Adversary emulation | Atomic Red Team | Planned |
-| Control documentation | NIST SP 800-53 Rev. 5, RMF artifacts | Planned |
+| Control documentation | NIST SP 800-53 Rev. 5 control references, POA&M | In use |
 
 ---
 
@@ -233,12 +232,17 @@ Full reports are in [`scans/`](scans/).
 ---
 
 ## Detection engineering
-**Status:** in progress — Splunk deployment pending.
+**Status:** in progress — pipeline live, detections not yet validated.
 
-Windows Security, PowerShell, and Sysmon logs will forward from DC01 and WS01 into Splunk. Each
-detection is written against a stated hypothesis, and is not counted as a detection until it has
-been validated by executing the corresponding Atomic Red Team test and confirming the search fires
-on real telemetry. The entries below are drafts until that pipeline exists.
+WS01 forwards Windows Security, System, PowerShell, and Sysmon events to Splunk on SIEM01. The
+build, the forwarder's least-privilege design, and the Sysmon configuration's provenance are in
+[`docs/logging-pipeline.md`](docs/logging-pipeline.md); the deployed configuration is in
+[`config/`](config/). Telemetry is host-based: Sysmon records which process opened a network
+connection, but no packet or flow data is collected.
+
+Each detection is written against a stated hypothesis, and is not counted as a detection until it
+has been validated by executing the corresponding Atomic Red Team test and confirming the search
+fires on real telemetry.
 
 | Technique | ATT&CK ID | Log source | Detection |
 |---|---|---|---|
@@ -256,6 +260,7 @@ on real telemetry. The entries below are drafts until that pipeline exists.
 |---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing, scan scope |
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
+| [`docs/logging-pipeline.md`](docs/logging-pipeline.md) | Splunk, forwarder, and Sysmon build: verification, least privilege, configuration provenance |
 | [`docs/internet-windows.md`](docs/internet-windows.md) | Log of temporary internet access for patching |
 | [`docs/rhel01-remediation.md`](docs/rhel01-remediation.md) | RHEL01 STIG remediation: staging, deviations, and open items |
 | [`docs/ws01-stig-gpo.md`](docs/ws01-stig-gpo.md) | WS01 STIG remediation: GPO import and scoping, package defects, BitLocker, VBS |
@@ -270,6 +275,7 @@ federal-homelab/
 ├── docs/           architecture, remediation method, POA&M
 ├── scans/          OpenSCAP, SCC, and Nessus results
 ├── detections/     SPL searches with ATT&CK mapping
+├── config/         Splunk and Sysmon configuration as deployed
 ├── scripts/        scan automation
 └── screenshots/    walkthrough evidence
 ```
@@ -279,8 +285,9 @@ federal-homelab/
 ## Notes
 
 A personal training environment, not an accredited system. Compliance percentages describe lab
-virtual machines. STIG and SCAP content is published by DISA and NIWC Atlantic; this repository
-contains only results generated against it.
+virtual machines, each as of the dated scan in `scans/`: WS01's forwarder and Sysmon were installed
+after its post-remediation scan and it has not been rescanned since. STIG and SCAP content is
+published by DISA and NIWC Atlantic; this repository contains only results generated against it.
 
 ### AI assistance
 

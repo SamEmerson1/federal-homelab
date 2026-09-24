@@ -19,6 +19,25 @@ Five virtual machines, a Windows domain, an attack platform, and a documented se
 
 ---
 
+## What this demonstrates
+
+Hands-on, evidence-backed experience with the security controls used in U.S. federal and
+defense-contractor environments:
+
+- **System hardening** — Windows and Linux hosts brought to DISA STIG baselines, with every
+  remaining gap risk-accepted and documented.
+- **Vulnerability management** — credentialed Nessus assessment, then remediation to zero critical
+  and high findings.
+- **Security monitoring and detection** — a Splunk SIEM collecting endpoint telemetry, with
+  MITRE ATT&CK-mapped detections validated by running real attack techniques against it.
+- **Compliance documentation** — RMF-style POA&M and NIST SP 800-53 control references throughout.
+
+The sections below run from summary to detail. Skim the tables for the headline results, or follow
+the links into [`docs/`](docs/), [`scans/`](scans/), and [`detections/`](detections/) for the full
+method and the committed evidence behind every number.
+
+---
+
 ## Environment
 
 | Host | OS | Role |
@@ -106,20 +125,9 @@ Baseline scan, remediation, rescan, against DISA STIG benchmarks.
 | WS01 | Microsoft Windows 11 STIG V2R10 | SCC 5.15 | 38.84% | **97.11%** |
 | DC01 | Microsoft Windows Server 2025 STIG V1R1 | SCC 5.15 | 42.74% | Deferred — [POA&M](docs/poam.md) |
 
-Baseline rule counts, all scans run against the MAC-2 Sensitive profile:
-
-| Target | Pass | Fail | N/A | Not checked | CAT I fail | CAT II fail | CAT III fail |
-|---|---|---|---|---|---|---|---|
-| RHEL01 | 167 | 258 | 42 | 10 | 11 | 224 | 20 |
-| WS01 | 94 | 148 | 5 | 10 | 13 | 127 | 8 |
-| DC01 | 103 | 138 | 21 | 29 | 11 | 119 | 8 |
-
-After remediation, same benchmark, profile, and scoring method:
-
-| Target | Pass | Fail | N/A | Not checked | CAT I fail | CAT II fail | CAT III fail |
-|---|---|---|---|---|---|---|---|
-| RHEL01 | 410 | 17 | 40 | 10 | 1 | 11 | 5 |
-| WS01 | 235 | 7 | 5 | 10 | 1 | 6 | 0 |
+All scans use the MAC-2 Sensitive profile, and rescans repeat the same benchmark, profile, and
+scoring method. Full rule-count breakdowns by severity (CAT I/II/III), before and after, are in each
+host's remediation writeup and in the committed scan reports under [`scans/`](scans/).
 
 **RHEL01:** 258 failed rules reduced to 17, applied in five reviewed stages with a snapshot and a
 login test between each. Method, deviations, and a conflict found inside the benchmark content:
@@ -185,12 +193,7 @@ the [POA&M](docs/poam.md).
 
 Nessus scans from KALI01 against all four non-scanner hosts. An uncredentialed baseline was taken
 first to establish the external view, then a credentialed scan with domain and SSH credentials.
-
-| Scan | Hosts | Unique plugins | Finding instances | Duration |
-|---|---|---|---|---|
-| Uncredentialed baseline | 4 | 40 | 70 | 22 min |
-| Credentialed baseline | 4 | 244 | 421 | 29 min |
-| Credentialed, post-patch | 4 | 187 | 378 (all informational) | — |
+Findings by host, from the credentialed baseline:
 
 | Host | Uncredentialed | Credentialed | Critical | High | Medium | Low |
 |---|---|---|---|---|---|---|
@@ -308,17 +311,17 @@ published by DISA and NIWC Atlantic; this repository contains only results gener
 
 ### AI assistance
 
-I used Claude (Anthropic) as a working partner through the build and remediation phases. "AI
-assisted" can mean anything from proofreading to generating the whole project, so the split is
-stated precisely:
+I used Claude (Anthropic) as a working partner through the build, remediation, and detection
+phases. "AI assisted" can mean anything from proofreading to generating the whole project, so the
+split is stated precisely:
 
 | Performed by me | AI-assisted |
 |---|---|
-| Built and configured the environment: five virtual machines, the isolated segment, the `lab.local` domain, and the OU design | Phase planning and the order work was carried out in |
+| Built and configured the environment: five virtual machines, the isolated segment, the `lab.local` domain, and the OU design | Phase planning, and the order work was carried out in |
 | Ran every OpenSCAP, SCC, and Nessus scan on my own hosts | Reading the OVAL and XCCDF internals of the resulting reports and explaining what a rule actually tests |
 | Executed every remediation command, GPO import, and policy change | Proposing those commands and the `scripts/` contents, which I reviewed before running |
 | Diagnosed and recovered from failures — filesystem corruption during patching, a truncated virtual disk, and a workstation that logged in to no shell | Interpreting error output I pasted back, and narrowing the hypotheses |
-| Every decision: scope, risk acceptance, what to defer, when to roll back, what to publish | Drafting the prose in this README and `docs/`, which I reviewed and edited |
+| Every decision: scope, risk acceptance, what to defer, when to roll back, what to publish | Drafting the prose in this README, `docs/`, and `detections/`, which I reviewed and edited |
 | All screenshots and every figure in this repository | Looking up vendor documentation and version specifics |
 
 Every number here comes from a scan I ran against these machines, recorded in a report committed to
@@ -331,5 +334,10 @@ User Rights Assignment and left the workstation reporting as configured while en
 caught by exporting the applied policy and checking for resolved SIDs rather than trusting the GPO
 report. Separately, a proposed root cause for a PowerShell module failure was contradicted by the
 evidence, and the actual cause turned out to be a corrupt file the servicing tools could not repair.
+
+During the detection phase, Claude declined to give step-by-step guidance on installing, launching,
+or choosing which Atomic Red Team attack tests to run. That material came from Red Canary's own
+documentation, and the test selection was mine. Claude's part in this phase was the Splunk detection
+logic, the analysis of the results, and the write-ups.
 
 Commits where AI assisted carry a `Co-Authored-By` trailer, so the history distinguishes them.

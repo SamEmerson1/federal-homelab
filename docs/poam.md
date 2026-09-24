@@ -200,6 +200,11 @@ no route to any other network.
 *Closure:* build a lab CA, issue certificates, enable TLS with server-certificate verification on
 9997, and set a unique `pass4SymmKey`. Not scheduled.
 
+Splunk's health monitor also reports an empty `allowedDomainList` in `alert_actions.conf`, which
+would let alert emails be sent to any domain. No SMTP server is configured and SIEM01 has no route
+off the lab segment, so no alert email can leave; recorded here for completeness and closed by
+setting an allowed-domain list if email alerting is ever enabled.
+
 ---
 
 ## Notes on method

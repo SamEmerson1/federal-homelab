@@ -34,6 +34,12 @@ than counting certificates in a store.
 This is the preferred pattern for introducing software to an isolated enclave: acquire outside,
 verify, transfer, verify again. It replaces a network exception with a file-integrity check.
 
+**2026-09-24 — Atomic Red Team, WS01.** The Atomic Red Team framework and atomics were downloaded
+on the physical host and transferred into the segment, the same acquire-outside/transfer/verify
+pattern used for other tooling. No internet window was opened on WS01. Part of the atomics library
+did not transfer intact on the first attempt; the missing techniques were re-copied from a fresh
+clone taken on the host the same day. The clone's exact commit was not recorded.
+
 **2026-09-23 — Splunk and Sysmon components, SIEM01 and WS01.** The Splunk Enterprise RPM,
 Universal Forwarder MSI, both Splunk add-ons, and the Sysmon configuration were downloaded on the
 physical host and moved in by shared folder and `scp` from DC01. Both Splunk packages matched

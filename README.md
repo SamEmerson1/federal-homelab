@@ -13,6 +13,7 @@ Five virtual machines, a Windows domain, an attack platform, and a documented se
 | Windows 11 STIG compliance | 38.84% → **97.11%** · 148 failed rules to 7, 12 of 13 CAT I closed |
 | Credentialed vulnerability findings | 21 critical and 35 high → **0** |
 | Defects found in published DISA content | **4**, each reproducible and documented |
+| ATT&CK detections validated in Splunk with Atomic Red Team | **4 of 5**, each with committed evidence |
 
 ![DoD notice and consent banner, enforced on RHEL01 by the STIG baseline](screenshots/rhel01-warning.png)
 
@@ -89,8 +90,8 @@ Workstations OU so hardening policy can be scoped away from the domain controlle
 | Password policy | Domain baseline plus fine-grained policy for privileged accounts | In use |
 | Endpoint telemetry | Sysmon (built-in Windows feature), sysmon-modular configuration | In use |
 | Log aggregation | Splunk Enterprise 10.4.3 with Universal Forwarder | In use |
-| Detection engineering | SPL searches mapped to MITRE ATT&CK | In progress |
-| Adversary emulation | Atomic Red Team | Planned |
+| Detection engineering | SPL searches mapped to MITRE ATT&CK, validated with Atomic Red Team | In use |
+| Adversary emulation | Atomic Red Team (WS01 only) | In use |
 | Control documentation | NIST SP 800-53 Rev. 5 control references, POA&M | In use |
 
 ---
@@ -231,26 +232,41 @@ Full reports are in [`scans/`](scans/).
 
 ---
 
+## Security monitoring with Splunk
+
+**Splunk Enterprise 10.4.3** runs on SIEM01 as the lab's SIEM. WS01 forwards its Windows Security,
+System, PowerShell, and Sysmon logs to it through a Universal Forwarder; Sysmon is the built-in
+Windows feature with a sysmon-modular configuration. The full build — signature-verified install,
+the forwarder's least-privilege design, and the Sysmon configuration's provenance — is documented in
+[`docs/logging-pipeline.md`](docs/logging-pipeline.md), and every deployed configuration file is
+committed under [`config/`](config/).
+
+On that data, five detections are written as scheduled Splunk alerts, each mapped to a MITRE ATT&CK
+technique and saved in
+[`config/siem01/lab_siem_config/local/savedsearches.conf`](config/siem01/lab_siem_config/local/savedsearches.conf).
+Telemetry is host-based: Sysmon records which process opened a network connection, but no packet or
+flow data is collected.
+
 ## Detection engineering
-**Status:** in progress — pipeline live, detections not yet validated.
 
-WS01 forwards Windows Security, System, PowerShell, and Sysmon events to Splunk on SIEM01. The
-build, the forwarder's least-privilege design, and the Sysmon configuration's provenance are in
-[`docs/logging-pipeline.md`](docs/logging-pipeline.md); the deployed configuration is in
-[`config/`](config/). Telemetry is host-based: Sysmon records which process opened a network
-connection, but no packet or flow data is collected.
+**Status:** four of five detections validated against live telemetry with Atomic Red Team.
 
-Each detection is written against a stated hypothesis, and is not counted as a detection until it
-has been validated by executing the corresponding Atomic Red Team test and confirming the search
-fires on real telemetry.
+Each detection is written against a stated hypothesis and is not counted as validated until the
+matching Atomic Red Team test has run on WS01 and the scheduled alert has fired on the resulting
+events. Every validated row links to committed evidence — exported Splunk results, the alert-fired
+log, and the Atomic Red Team execution log — under [`detections/evidence/`](detections/evidence/).
 
-| Technique | ATT&CK ID | Log source | Detection |
-|---|---|---|---|
-| PowerShell | T1059.001 | Sysmon EID 1, PowerShell 4104 | — |
-| Create Account: Local Account | T1136.001 | Security 4720, 4732 | [`T1136.001`](detections/T1136.001-local-account-creation.md) |
-| Scheduled Task/Job | T1053.005 | Security 4698, Sysmon EID 1 | — |
-| Abuse Elevation Control: UAC Bypass | T1548.002 | Sysmon EID 1, 13 | — |
-| Clear Windows Event Logs | T1070.001 | Security 1102, System 104 | — |
+| Technique | ATT&CK ID | Log source | Status | Detection |
+|---|---|---|---|---|
+| PowerShell encoded command | T1059.001 | Security 4688, PowerShell 4104 | **Validated** | [`T1059.001`](detections/T1059.001-powershell-encoded-command.md) |
+| Create Account: Local Account | T1136.001 | Security 4720, 4732 | **Validated** | [`T1136.001`](detections/T1136.001-local-account-creation.md) |
+| Scheduled Task/Job | T1053.005 | Security 4698 | **Validated** | [`T1053.005`](detections/T1053.005-scheduled-task-creation.md) |
+| Abuse Elevation Control: UAC Bypass | T1548.002 | Sysmon 12/13 | **Validated** | [`T1548.002`](detections/T1548.002-uac-bypass-registry.md) |
+| Clear Windows Event Logs | T1070.001 | Security 1102, System 104 | Not validated | [`T1070.001`](detections/T1070.001-clear-event-logs.md) |
+
+T1070.001 is written and scheduled but was not validated: the Atomic Red Team release used has no
+test for that sub-technique, and its file says so rather than claiming a result. See
+[`detections/`](detections/) for the validation method and coverage limits.
 
 ---
 
@@ -261,6 +277,7 @@ fires on real telemetry.
 | [`docs/architecture.md`](docs/architecture.md) | Environment design, isolation model, addressing, scan scope |
 | [`docs/network-diagram.md`](docs/network-diagram.md) | Topology and data flows |
 | [`docs/logging-pipeline.md`](docs/logging-pipeline.md) | Splunk, forwarder, and Sysmon build: verification, least privilege, configuration provenance |
+| [`detections/`](detections/) | Five ATT&CK-mapped Splunk detections, validation method, and evidence |
 | [`docs/internet-windows.md`](docs/internet-windows.md) | Log of temporary internet access for patching |
 | [`docs/rhel01-remediation.md`](docs/rhel01-remediation.md) | RHEL01 STIG remediation: staging, deviations, and open items |
 | [`docs/ws01-stig-gpo.md`](docs/ws01-stig-gpo.md) | WS01 STIG remediation: GPO import and scoping, package defects, BitLocker, VBS |
@@ -274,7 +291,7 @@ fires on real telemetry.
 federal-homelab/
 ├── docs/           architecture, remediation method, POA&M
 ├── scans/          OpenSCAP, SCC, and Nessus results
-├── detections/     SPL searches with ATT&CK mapping
+├── detections/     SPL searches with ATT&CK mapping, plus evidence/
 ├── config/         Splunk and Sysmon configuration as deployed
 ├── scripts/        scan automation
 └── screenshots/    walkthrough evidence

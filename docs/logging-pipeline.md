@@ -1,7 +1,7 @@
 # Logging Pipeline
 
-**Status:** live for WS01 as of 2026-09-23. Detections are drafts until validated with Atomic Red
-Team — see [`detections/`](../detections/).
+**Status:** live for WS01 as of 2026-09-23. Four of five detections validated with Atomic Red Team
+on 2026-09-24 — see [`detections/`](../detections/).
 
 WS01 forwards Windows Security, System, PowerShell, and Sysmon events to Splunk Enterprise on
 SIEM01. Every configuration file that defines the pipeline is committed under

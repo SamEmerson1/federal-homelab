@@ -9,7 +9,7 @@ Addressing, the isolation boundary, and the VM inventory are in
 
 ## Log flow
 
-**Status:** live for WS01 since 2026-09-23. Build details in
+**Status:** live for WS01 since 2026-09-23; detections validated 2026-09-24. Build details in
 [`logging-pipeline.md`](logging-pipeline.md).
 
 ```mermaid

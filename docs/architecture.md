@@ -63,6 +63,12 @@ Atomic Red Team executes only on WS01. It is never run against the domain contro
 the lab segment, and the workstation is snapshotted immediately before each session so any
 persistence that survives cleanup can be rolled back.
 
+The detection-validation session on 2026-09-24 followed this pattern: WS01 was snapshotted
+(`pre-art`), the tests were run one technique at a time with each test's cleanup, and the host was
+reverted to the snapshot afterward. One test's registry change was additionally reverted by
+Microsoft Defender during the run. Per-test execution logs are committed under
+[`../detections/evidence/`](../detections/evidence/).
+
 ## Tool-to-capability mapping
 
 | Federal capability | Tool in this lab | Operational equivalent |

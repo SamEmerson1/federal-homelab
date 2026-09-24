@@ -7,7 +7,7 @@ deliberately rather than discovered later; an item here is a decision, not an ov
 Every finding traces to a scan report committed under [`scans/`](../scans/). Control references are
 the CCI and NIST SP 800-53 Rev. 5 mappings published in the DISA benchmark content.
 
-**As of:** 2026-09-22
+**As of:** 2026-09-23
 
 | Host | Assessed | Remediated | Open | Reference |
 |---|---|---|---|---|
@@ -123,8 +123,9 @@ conversion, re-escrow. Deferred maintenance.
 | Benchmark self-conflict | 1 | `scap-security-guide` 0.1.82 contains rules demanding mutually exclusive SSH MAC orderings; see [`rhel01-remediation.md`](rhel01-remediation.md) |
 
 The filesystem-layout items close at next rebuild. Of the infrastructure items, the four
-log-forwarding rules become closable once a collector runs on SIEM01, which is planned for the
-current phase. The DNS and PKI items remain open with no planned closure.
+log-forwarding rules would close with remote log forwarding from RHEL01 to SIEM01. The collector
+now exists, but forwarding from RHEL01 is not planned, so they remain open. The DNS and PKI items
+remain open with no planned closure.
 
 **Misclassified: `rsyslog_remote_access_monitoring`.** Grouped with the log-forwarding rules at
 the time of remediation on the strength of its title. Its OVAL definition in
@@ -132,8 +133,8 @@ the time of remediation on the strength of its title. Its OVAL definition in
 lines covering `auth.*`, `authpriv.*`, and `daemon.*` that write to a file or forward — a local
 destination satisfies it, and no remote host is required. "Remote access" in the title refers to
 the access methods being logged, not to where the logs go. The current configuration fails on
-`auth.*` and `daemon.*`; `authpriv.*` already matches. Closable without new infrastructure and
-scheduled with the rsyslog work.
+`auth.*` and `daemon.*`; `authpriv.*` already matches. Closable without new infrastructure; not
+remediated, and left open with its classification corrected.
 
 ---
 
@@ -141,10 +142,11 @@ scheduled with the rsyslog work.
 
 | ID | Item | Status |
 |---|---|---|
-| ENV-001 | DC01 STIG remediation deferred | Open — planned Phase 3 |
-| ENV-002 | SIEM01 excluded from compliance scanning | Accepted, documented scope limitation |
+| ENV-001 | DC01 STIG remediation deferred | Open — not scheduled |
+| ENV-002 | SIEM01 excluded from compliance scanning while holding audit records | Accepted — risk stated |
 | ENV-003 | KALI01 excluded from compliance scanning | Accepted — assessment platform, no applicable STIG |
 | ENV-004 | DISA GPO package v2r8 against benchmark V2R10 | Open — compensating policy in place |
+| ENV-005 | Splunk transport and certificates | Accepted — no lab certificate authority |
 
 **ENV-001 — DC01 remediation deferred.** DC01 was assessed and its baseline is committed
 ([`dc01-baseline-20260918.md`](../scans/scc/dc01-baseline-20260918.md)): 42.74%, 138 failed rules.
@@ -163,8 +165,7 @@ inbound path from outside the lab segment, and the domain-wide password and lock
 strengthened during workstation remediation.
 
 *Closure:* stand up a second domain controller, then apply the Server 2025 STIG GPO to the Domain
-Controllers OU in stages with cross-host dependency validation between each. Planned as Phase 3,
-after the Splunk build.
+Controllers OU in stages with cross-host dependency validation between each. Not scheduled.
 
 **ENV-004 — GPO package version drift.** DISA's published Windows 11 STIG GPO package is at v2r8
 while the SCAP benchmark used for assessment is V2R10. Three rules present in V2R10 have no
@@ -173,6 +174,31 @@ supplemental GPO (`Lab - STIG V2R10 Supplement`) supplies them.
 
 *Closure:* adopt the v2r10 GPO package when DISA publishes it, then retire the supplemental GPO.
 Until then the supplement is the compensating control, and its name records why it exists.
+
+**ENV-002 — SIEM01 unhardened while holding audit records.** SIEM01 was excluded from compliance
+scanning as the monitoring platform, before it held any data. It now stores WS01's Security,
+PowerShell, and Sysmon records, so a compromise of SIEM01 or of the Splunk administrator account
+would allow the evidence of activity on WS01 to be read or deleted (AU-9). Splunk runs as an
+unprivileged service account, its web interface requires TLS, and the host firewall admits only
+the lab subnet, but the operating system carries no STIG baseline.
+
+*Risk:* audit records for the forwarding host are protected by one administrator credential and an
+unhardened host. Offset by network isolation and by the source logs remaining on WS01.
+
+*Closure:* an assess-only OpenSCAP baseline of SIEM01, then remediation compatible with Splunk.
+Not scheduled.
+
+**ENV-005 — Splunk transport and certificates.** Forwarded events travel from WS01 to SIEM01 on
+port 9997 without encryption (SC-8). Splunk Web uses a self-signed certificate, and the forwarder's
+own startup log reports that it does not verify the server certificate and still uses the default
+`pass4SymmKey`. All four have the same fix — a lab certificate authority issuing certificates to
+SIEM01 and the forwarder — and none of it exists in this lab.
+
+*Risk:* a host on the lab segment could read or alter events in transit to SIEM01. The segment has
+no route to any other network.
+
+*Closure:* build a lab CA, issue certificates, enable TLS with server-certificate verification on
+9997, and set a unique `pass4SymmKey`. Not scheduled.
 
 ---
 

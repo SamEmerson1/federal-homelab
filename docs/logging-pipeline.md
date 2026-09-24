@@ -113,15 +113,20 @@ time, and `Image`, `CommandLine`, `ParentImage`, and `RuleName` populate on proc
 
 ## Findings from the build
 
-**A pasted configuration file was silently corrupted.** The first `inputs.conf` and `outputs.conf`
-were written from multi-line text pasted into a PowerShell console, and the paste dropped line
-breaks. The PowerShell input's stanza header was joined to the end of the previous line, becoming
-part of a value, so that channel was never collected; the output group's header was joined to
-`defaultGroup`. Forwarding still worked, because the server setting fell under `[tcpout]`, which
-is why nothing looked wrong. `btool`, which prints the configuration Splunk actually loads, showed
-two input stanzas where three had been written. The files were rewritten from line arrays that a
-paste cannot join, and every configuration since has been checked with `btool` rather than by
-reading back what was written.
+**A pasted configuration file was silently corrupted.** The first `inputs.conf` was written from
+multi-line text pasted into a PowerShell console, and the paste dropped a line break: the
+PowerShell input's stanza header was joined to the end of the previous line and became part of a
+value, so that channel was never collected. Security and System events arrived normally, so
+nothing looked wrong until the PowerShell channel came up empty. `btool`, which prints the
+configuration Splunk actually loads, showed two input stanzas where three had been written. The
+file was rewritten from a line array that a paste cannot join, and every configuration since has
+been checked with `btool` rather than by reading back what was written.
+
+A second suspicion from the same investigation turned out to be wrong. `outputs.conf` and
+`app.conf` were smaller on disk than their intended content, which looked like the same corruption.
+Reading them showed intact files: text pasted into a console carries bare line feeds, while
+`Set-Content` writes carriage-return line feeds, and the byte difference was the line endings. A
+file's size is an inference; its contents are the evidence.
 
 **Event volume is dominated by bursts, not the steady rate.** A `gpupdate /force` produced a burst
 of Security events far above the host's idle rate — WS01 audits registry and handle operations —

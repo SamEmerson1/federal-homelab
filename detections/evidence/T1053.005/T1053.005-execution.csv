@@ -1,0 +1,2 @@
+"Execution Time (UTC)","Execution Time (Local)","Technique","Test Number","Test Name","Hostname","IP Address","Username","GUID","ProcessId","ExitCode"
+"2026-09-24T19:45:45Z","2026-09-24T14:45:45Z","T1053.005","2","Scheduled task Local","WS01","10.10.10.40","lab\stigadmin","42f53695-ad4a-4546-abb6-7d837f644a71","2864","0"

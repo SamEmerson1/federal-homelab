@@ -1,0 +1,2 @@
+"Execution Time (UTC)","Execution Time (Local)","Technique","Test Number","Test Name","Hostname","IP Address","Username","GUID","ProcessId","ExitCode"
+"2026-09-24T20:43:57Z","2026-09-24T15:43:57Z","T1548.002","1","Bypass UAC using Event Viewer (cmd)","WS01","10.10.10.40","lab\stigadmin","5073adf8-9a50-4bd9-b298-a9bd2ead8af9","8788","0"

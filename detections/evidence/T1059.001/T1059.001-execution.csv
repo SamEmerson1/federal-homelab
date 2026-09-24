@@ -1,0 +1,2 @@
+"Execution Time (UTC)","Execution Time (Local)","Technique","Test Number","Test Name","Hostname","IP Address","Username","GUID","ProcessId","ExitCode"
+"2026-09-24T20:35:15Z","2026-09-24T15:35:15Z","T1059.001","17","PowerShell Command Execution","WS01","10.10.10.40","lab\stigadmin","a538de64-1c74-46ed-aa60-b995ed302598","2688","0"

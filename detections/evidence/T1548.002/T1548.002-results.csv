@@ -1,0 +1,3 @@
+"_time",EventCode,EventType,Image,TargetObject,Details
+"2026-09-24T15:43:58.163-0500",13,SetValue,"C:\WINDOWS\system32\reg.exe","HKU\S-1-5-21-3939094207-3828562134-2660578157-1108_Classes\mscfile\shell\open\command\(Default)","C:\Windows\System32\cmd.exe"
+"2026-09-24T15:44:13.914-0500",12,DeleteValue,"C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.26080.4-0\MsMpEng.exe","HKU\S-1-5-21-3939094207-3828562134-2660578157-1108_Classes\mscfile\shell\open\command",

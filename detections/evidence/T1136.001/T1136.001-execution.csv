@@ -1,0 +1,5 @@
+"Execution Time (UTC)","Execution Time (Local)","Technique","Test Number","Test Name","Hostname","IP Address","Username","GUID","ProcessId","ExitCode"
+"2026-09-24T18:56:11Z","2026-09-24T13:56:11Z","T1136.001","4","Create a new user in a command prompt","WS01","10.10.10.40","lab\stigadmin","6657864e-0323-4206-9344-ac9cd7265a4f","7036","-1"
+"2026-09-24T18:58:12Z","2026-09-24T13:58:12Z","T1136.001","8","Create a new Windows admin user","WS01","10.10.10.40","lab\stigadmin","fda74566-a604-4581-a4cc-fbbe21d66559","1372","-1073741502"
+"2026-09-24T19:15:44Z","2026-09-24T14:15:44Z","T1136.001","4","Create a new user in a command prompt","WS01","10.10.10.40","lab\stigadmin","6657864e-0323-4206-9344-ac9cd7265a4f","6656","0"
+"2026-09-24T19:15:45Z","2026-09-24T14:15:45Z","T1136.001","8","Create a new Windows admin user","WS01","10.10.10.40","lab\stigadmin","fda74566-a604-4581-a4cc-fbbe21d66559","10588","0"
